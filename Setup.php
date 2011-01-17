@@ -164,11 +164,11 @@ include_once(Setup::Configuration()->ModulesDirectory."/SiSPS/Parsers/IParser.ph
 
 //include everything else
 $directories = array(
-    dirname(__FILE__)."/Analytics/",
     dirname(__FILE__)."/ObjectModel/",
     dirname(__FILE__)."/DAL/",
     dirname(__FILE__)."/StateTransition/",
     dirname(__FILE__)."/PreProcessing/",
+    dirname(__FILE__)."/Analytics/",
     dirname(__FILE__)."/Workflows/",
     dirname(__FILE__)."/EventDistribution/",
     Setup::Configuration()->ModulesDirectory."/SiSW/",

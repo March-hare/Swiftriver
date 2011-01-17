@@ -95,10 +95,18 @@ class ContentByChannelOverTimeAnalyticsProvider
             
             foreach($statement->fetchAll() as $row)
             {
+                $channel_name = "";
+                $entry_json_decoded = json_decode($row["channelJson"]);
+
+                if(isset($entry_json_decoded->name)) {
+                    $channel_name = $entry_json_decoded->name; 
+                }
+
                 $entry = array(
                     "dayOfTheYear" => $this->DayOfYear2Date($row["dayoftheyear"]),
                     "numberOfContentItems" => $row["numberofcontentitems"],
-                    "channelId" => $row["channelId"]);
+                    "channelId" => $row["channelId"],
+                    "channelName" => $channel_name);
 
                 $request->Result[] = $entry;
             }
