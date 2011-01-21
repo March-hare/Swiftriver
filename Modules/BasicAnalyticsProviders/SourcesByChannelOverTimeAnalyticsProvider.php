@@ -140,7 +140,7 @@ class SourcesByChannelOverTimeAnalyticsProvider
      */
     public function DataContentSet()
     {
-        return array("\Swiftriver\Core\Modules\DataContext\MySql_V2\DataContext");
+        return array("\\Swiftriver\\Core\\Modules\\DataContext\\MySql_V2\\DataContext");
     }
 
     private  function DayOfYear2Date( $dayofyear, $format = 'd-m-Y' )

@@ -148,6 +148,7 @@ class AnalyticsEngine
         $request->DataContextType = $dataContextType;
 
         $providerType = $request->RequestType;
+        $providerType.="AnalyticsProvider";
 
         $logger->log("Core::Analytics::AnalyticsEngine::__construct [START: Looking for matching provider]", \PEAR_LOG_DEBUG);
 
