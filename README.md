@@ -1,14 +1,14 @@
 ﻿SWIFTRIVER
 ==========
  
-SwiftRiver is a FOSS platform offering open source intelligence products for monitoring streams of data. Use of the platform varies, for example, one use might be to use one of our apps for determining the accuracy of crowdsourced information related to an event or topic.  This download is not 'SwiftRiver' it contains a PHP core that accesses a number of SwiftRiver APIs.  The combination of some or all of these APIs working together is our platform.
+SwiftRiver (swiftly.org) exists as an open source platform for making sense of disparate realtime content.  Our chief mission is to "democratize access to the tools for understanding information" and drawing insight from it.  Our tools work online or offline, including SMS as the example of offline realtime data. 
 
-Swift is extremely modular with plug-ins and API services.  Different apps are built on this platform. This download contains our flagship app, called The Sweeper, designed to help users of tools like Ushahidi manage large amounts of realtime information. You can find out more about Swift Web Services at - http://swiftly.org
+To achieve this goal we’ve taken two approaches, apps and APIs. Apps are user facing and should be tools that are easy to understand, deploy and use. APIs are machine facing and extract meta-context that other machines (apps) use to convey information to the end user.
 
 Find us on Github - http://github.com/ushahidi/Swiftriver
 Find us on IRC - irc://irc.freenode.net#swiftriver
 
-NOTE: Contact jg [at] swiftly.org with additional questions or feedback.
+Contact jg [at] swiftly.org with additional questions or feedback
 
 
 SERVER REQUIREMENTS
@@ -20,7 +20,7 @@ SERVER REQUIREMENTS
 * MySQL 4.0 or higher
 * Supports IE7+, FireFox, Safari, Chrome
 	
-Further details on this release can be found at - http://swift.ushahidi.com/doc/
+Further details on this release can be found at - http://wiki.ushahidi.com
 
 
 RELEASE NOTES
@@ -56,8 +56,8 @@ Other applications and products that were built on the SwiftRiver platform.
 DOCUMENTATION
 -------------
 
-Documentation - http://swift.ushahidi.com/doc/ 
-Installation - http://swift.ushahidi.com/doc/doku.php?id=install
+Documentation - http://wiki.ushahidi.com/doku.php?id=intro
+Installation - http://wiki.ushahidi.com/doku.php?id=install_s
 
 
 PROJECT CONTRIBUTORS

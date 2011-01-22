@@ -2,7 +2,7 @@
 namespace Swiftriver\TagTheNetInterface;
 class TextForUrlParser {
     /**
-     * The content item to extract uri lext from
+     * The content item to extract URI text from
      * @var \Swiftriver\Core\ObjectModel\Content
      */
     private $content;

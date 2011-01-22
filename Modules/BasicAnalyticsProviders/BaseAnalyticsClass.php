@@ -3,7 +3,7 @@ namespace Swiftriver\AnalyticsProviders;
 class BaseAnalyticsClass
 {
     /**
-     * This function returns an initilised \PDO object that
+     * This function returns an initialized \PDO object that
      * can be used by the calling class to access the data
      * store. The implementation of generating the \PDO
      * object is switched on the DataContentType property

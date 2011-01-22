@@ -8,8 +8,8 @@ class DetectionAndTranslationWorkflow {
     private $content;
 
     /**
-     * The Uri for the refering swift instance
-     * @var string uir of the referer
+     * The URI for the referring swift instance
+     * @var string uRI of the referrer
      */
     private $referer;
 
