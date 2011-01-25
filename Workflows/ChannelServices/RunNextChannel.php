@@ -138,9 +138,10 @@ class RunNextChannel extends ChannelServicesBase
                 $contentRepository = new \Swiftriver\Core\DAL\Repositories\ContentRepository();
                 $contentRepository->SaveContent($processedContent);
 
+                // Raise the event handler that handles the post processing of content
+
                 $logger->log("Core::Workflows::ChannelServices::RunNextChannel::RunWorkflow [Raise the Ushahidi Push Event Handler]", \PEAR_LOG_DEBUG);
 
-                // Raise the event handler that handles the post processing of content
                 $event = new \Swiftriver\Core\EventDistribution\GenericEvent(
                     \Swiftriver\Core\EventDistribution\EventEnumeration::$ContentPostProcessing,
                     $processedContent);
@@ -150,6 +151,7 @@ class RunNextChannel extends ChannelServicesBase
                 $eventDistributor->RaiseAndDistributeEvent($event);
 
                 $logger->log("Core::Workflows::ChannelServices::RunNextChannel::RunWorkflow [End Ushahidi Push event]", \PEAR_LOG_DEBUG);
+
             }
             catch (\Exception $e)
             {

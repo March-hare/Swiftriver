@@ -70,11 +70,14 @@ class UshahidiPostProcessAPIEventHandler implements \Swiftriver\Core\EventDistri
         $content = $event->arguments;
 
         //check that arguments property of the $event passed in is a content item
+        /*
         if($content == null || !\Swiftriver\Core\ObjectModel\TypeComparisons\IsContent::CheckType($content)) {
             $logger->log("Swiftriver::EventHandlers::UshahidiPostProcessAPIEventHandler::HandleEvent [The obejct passed in the GenericEvent->arguments property was not of type Content.]", \PEAR_LOG_DEBUG);
             $logger->log("Swiftriver::EventHandlers::UshahidiPostProcessAPIEventHandler::HandleEvent [Method finished]", \PEAR_LOG_DEBUG);
             return;
         }
+         * 
+         */
 
         //get the module configuraiton
         $config = \Swiftriver\Core\Setup::DynamicModuleConfiguration()->Configuration;
@@ -106,61 +109,63 @@ class UshahidiPostProcessAPIEventHandler implements \Swiftriver\Core\EventDistri
             return;
         }
 
-        if($content->source->score > 9) {
-            $logger->log("Swiftriver::EventHandlers::UshahidiPostProcessAPIEventHandler::HandleEvent [Pushing trusted content item to Ushahidi]", \PEAR_LOG_DEBUG);
+        $logger->log("Swiftriver::EventHandlers::UshahidiPostProcessAPIEventHandler::HandleEvent [Pushing trusted content item to Ushahidi]", \PEAR_LOG_DEBUG);
 
-            //Instanciate the parser that will be used to parse the content item into Ushahidi format
-            $toUshahidiParser = new \Swiftriver\UshahidiPostProcessAPIInterface\ContentToUshahidiAPIParser();
+        foreach($content as $item) {
 
-            //Get the ushahidi formatted params from the parser
-            $parameters = $toUshahidiParser->ParseContentItemToUshahidiAPIFormat($content);
+            if($item->source->score > 90) {
+                // Trusted content
+                //Instanciate the parser that will be used to parse the content item into Ushahidi format
+                $toUshahidiParser = new \Swiftriver\UshahidiPostProcessAPIInterface\ContentToUshahidiAPIParser();
 
-            //include the service wrapper
-            $service = new \Swiftriver\UshahidiPostProcessAPIInterface\ServiceInterface();
+                //Get the ushahidi formatted params from the parser
+                $parameters = $toUshahidiParser->ParseContentItemToUshahidiAPIFormat($item);
 
-            $json_returned = "";
+                //include the service wrapper
+                $service = new \Swiftriver\UshahidiPostProcessAPIInterface\ServiceInterface();
 
-            try {
-                //Call the service and get the return
-                $serviceReturn = $service->InterafceWithService($uri, $parameters, $configuration);
+                $json_returned = "";
 
-                //null check return
-                if($serviceReturn == null || !is_string($serviceReturn))
-                    throw new \Exception("The service returned null or a none string");
+                try {
+                    //Call the service and get the return
+                    $serviceReturn = $service->InterafceWithService($uri, $parameters, $configuration);
 
-                //try to decode the json from the service
-                $json_returned = $serviceReturn;
-                $json = json_decode($serviceReturn);
+                    //null check return
+                    if($serviceReturn == null || !is_string($serviceReturn))
+                        throw new \Exception("The service returned null or a none string");
 
-                //Check that there is valid JSON
-                if(!$json) {
-                    throw new \Exception("The service returned a none json string");
+                    //try to decode the json from the service
+                    $json_returned = $serviceReturn;
+                    $json = json_decode($serviceReturn);
+
+                    //Check that there is valid JSON
+                    if(!$json) {
+                        throw new \Exception("The service returned a none json string");
+                    }
+
+                    if(!property_exists($json, "success")) {
+                        throw new \Exception("The service returned JSON but it did not contain the property 'success'");
+                    }
+
+                    if($json->success === false) {
+                        throw new \Exception("The service returned a false in the success flag");
+                    }
                 }
+                catch (\Exception $e) {
+                    $logger->log("Swiftriver::EventHandlers::UshahidiPostProcessAPIEventHandler::HandleEvent [An exception was thrown]", \PEAR_LOG_ERR);
+                    $logger->log("Swiftriver::EventHandlers::UshahidiPostProcessAPIEventHandler::HandleEvent [$e]", \PEAR_LOG_ERR);
 
-                if(!property_exists($json, "success")) {
-                    throw new \Exception("The service returned JSON but it did not contain the property 'success'");
-                }
+                    //Output the Returned value
+                    $logger->log("Value returned from service call:".$json_returned, \PEAR_LOG_ERR);
 
-                if($json->success === false) {
-                    throw new \Exception("The service returned a false in the success flag");
+                    $logger->log("Swiftriver::EventHandlers::UshahidiPostProcessAPIEventHandler::HandleEvent [Method finished]", \PEAR_LOG_DEBUG);
                 }
             }
-            catch (\Exception $e) {
-                $logger->log("Swiftriver::EventHandlers::UshahidiPostProcessAPIEventHandler::HandleEvent [An exception was thrown]", \PEAR_LOG_ERR);
-                $logger->log("Swiftriver::EventHandlers::UshahidiPostProcessAPIEventHandler::HandleEvent [$e]", \PEAR_LOG_ERR);
-
-                //Output the Returned value
-                $logger->log("Value returned from service call:".$json_returned, \PEAR_LOG_ERR);
-
-                $logger->log("Swiftriver::EventHandlers::UshahidiPostProcessAPIEventHandler::HandleEvent [Method finished]", \PEAR_LOG_DEBUG);
+            else {
+                // Not a trusted content item
+                $logger->log("Swiftriver::EventHandlers::UshahidiPostProcessAPIEventHandler::HandleEvent [Content item not pushed, score < 9, score is:".$item->source->score."]", \PEAR_LOG_DEBUG);
             }
         }
-        else
-        {
-            $logger->log("Swiftriver::EventHandlers::UshahidiPostProcessAPIEventHandler::HandleEvent [Item score < 9, Not pushing to Ushahidi]", \PEAR_LOG_DEBUG);
-        }
-
-
 
         $logger->log("Swiftriver::EventHandlers::UshahidiPostProcessAPIEventHandler::HandleEvent [Method finished]", \PEAR_LOG_DEBUG);
     }
