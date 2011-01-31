@@ -9,6 +9,5 @@ class EventEnumeration
 {
     public static $MarkContentAsAccurate = "MarkContentAsAccurate";
     public static $UpdateContentTagging = "UpdateContentTagging";
-    public static $ContentPostProcessing = "ContentPostProcessing";
 }
 ?>
