@@ -71,6 +71,8 @@ class SourcesByChannelOverTimeAnalyticsProvider
         
         try
         {
+            $logger->log("Swiftriver::AnalyticsProviders::SourcesByChannelOverTimeAnalyticsProvider::ProvideAnalytics [Executing SQL: $sql]", \PEAR_LOG_ERR);
+            
             $db = parent::PDOConnection($request);
 
             if($db == null)
