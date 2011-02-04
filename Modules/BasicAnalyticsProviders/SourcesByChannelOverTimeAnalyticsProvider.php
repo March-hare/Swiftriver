@@ -37,38 +37,75 @@ class SourcesByChannelOverTimeAnalyticsProvider
         $yearDay = (int) \date('z');
 
         $timeLimit = 5;
+        $timeFrom = 0;
+        $timeTo = \time();
 
-        if(\is_array($parameters))
-            if(\key_exists("TimeLimit", $parameters))
+        $queryType = "TimeLimit";
+
+        if(\is_array($parameters)) {
+            if(\key_exists("TimeLimit", $parameters)) {
+                $queryType= "TimeLimit";
+
                 $timeLimit = (int) $parameters["TimeLimit"];
+                $timeFrom = $timeLimit;
+                if(\key_exists("TimeTo", $parameters)) {
+                    $timeTo = (int) $parameters["TimeTo"];
+                }
+            }
+            else if(\key_exists("TimeRange", $parameters)) {
+                $queryType= "TimeRange";
+
+                $timeFrom = (int) $parameters["TimeFrom"];
+                if(\key_exists("TimeTo", $parameters)) {
+                    $timeTo = (int) $parameters["TimeTo"];
+                }
+            }
+        }
 
         $currentDay = $yearDay;
 
         $days = "";
 
-        while (($currentDay > 0) && (($yearDay - $currentDay) < $timeLimit))
-        {
-            $days .= "'$currentDay',";
+        $sql = "";
 
-            $currentDay = $currentDay - 1;
+        if($queryType == "TimeLimit") {
+            while (($currentDay > 0) && (($yearDay - $currentDay) < $timeLimit))
+            {
+                $days .= "'$currentDay',";
+                $currentDay = $currentDay - 1;
+            }
+
+            $days = \rtrim($days, ',');
+
+            $sql =
+                "SELECT
+                    DAYOFYEAR(FROM_UNIXTIME(s.date)) as dayoftheyear,
+                    count(s.id) as numberofsources,
+                    ch.id as channelId,
+                    ch.json as channelJson,
+                    s.json as sourceJson
+                FROM
+                    SC_Sources s JOIN SC_Channels ch ON s.channelId = ch.id
+                WHERE
+                    DAYOFYEAR(FROM_UNIXTIME(s.date)) in ($days)
+                GROUP BY
+                    channelId, dayoftheyear";
         }
-
-        $days = \rtrim($days, ',');
-
-        $sql = 
-            "SELECT 
-                DAYOFYEAR(FROM_UNIXTIME(s.date)) as dayoftheyear,
-                count(s.id) as numberofsources,
-                ch.id as channelId,
-                ch.json as channelJson,
-                s.json as sourceJson
-            FROM 
-                SC_Sources s JOIN SC_Channels ch ON s.channelId = ch.id
-            WHERE
-                DAYOFYEAR(FROM_UNIXTIME(s.date)) in ($days)
-            GROUP BY
-                channelId, dayoftheyear";
-        
+        else if($queryType == "TimeRange") {
+            $sql =
+                "SELECT
+                    FROM_UNIXTIME(c.date) as `datetime`,
+                    count(s.id) as numberofsources,
+                    ch.id as channelId,
+                    ch.json as channelJson,
+                    s.json as sourceJson
+                FROM
+                    SC_Sources s JOIN SC_Channels ch ON s.channelId = ch.id
+                WHERE
+                    c.date between $timeFrom and $timeTo
+                GROUP BY
+                    channelId, dayoftheyear";
+        }        
         try
         {
             $logger->log("Swiftriver::AnalyticsProviders::SourcesByChannelOverTimeAnalyticsProvider::ProvideAnalytics [Executing SQL: $sql]", \PEAR_LOG_ERR);
@@ -109,13 +146,25 @@ class SourcesByChannelOverTimeAnalyticsProvider
                 if(isset($entry_source_json_decoded->name)) {
                     $source_name = $entry_channel_json_decoded->name;
                 }
-                
-                $entry = array(
-                    "dayOfTheYear" => $this->DayOfYear2Date($row["dayoftheyear"]),
-                    "numberOfSources" => $row["numberofsources"],
-                    "channelId" => $row["channelId"],
-                    "channelName" => $channel_name,
-                    "sourceName" => $source_name);
+
+                $entry = null;
+
+                if($queryType == "TimeLimit") {
+                    $entry = array(
+                        "dayOfTheYear" => $this->DayOfYear2Date($row["dayoftheyear"]),
+                        "numberOfSources" => $row["numberofsources"],
+                        "channelId" => $row["channelId"],
+                        "channelName" => $channel_name,
+                        "sourceName" => $source_name);
+                }
+                else if($queryType == "TimeRange") {
+                    $entry = array(
+                        "dateTime" => $row["datetime"],
+                        "numberOfSources" => $row["numberofsources"],
+                        "channelId" => $row["channelId"],
+                        "channelName" => $channel_name,
+                        "sourceName" => $source_name);
+                }
 
                 $request->Result[] = $entry;
             }
