@@ -74,7 +74,6 @@ class SourcesByChannelOverTimeAnalyticsProvider
                 $days .= "'$currentDay',";
                 $currentDay = $currentDay - 1;
             }
-
             $days = \rtrim($days, ',');
 
             $sql =
@@ -105,7 +104,22 @@ class SourcesByChannelOverTimeAnalyticsProvider
                     c.date between $timeFrom and $timeTo
                 GROUP BY
                     channelId, dayoftheyear";
-        }        
+        }
+        $days = \rtrim($days, ',');
+
+        $sql = 
+            "SELECT 
+                DAYOFYEAR(FROM_UNIXTIME(s.date)) as dayoftheyear,
+                count(s.id) as numberofsources,
+                ch.id as channelId,
+                ch.json as channelJson,
+                s.json as sourceJson
+            FROM 
+                SC_Sources s JOIN SC_Channels ch ON s.channelId = ch.id
+            WHERE
+                DAYOFYEAR(FROM_UNIXTIME(s.date)) in ($days)
+            GROUP BY
+                channelId, dayoftheyear";
         try
         {
             $logger->log("Swiftriver::AnalyticsProviders::SourcesByChannelOverTimeAnalyticsProvider::ProvideAnalytics [Executing SQL: $sql]", \PEAR_LOG_ERR);
@@ -165,6 +179,13 @@ class SourcesByChannelOverTimeAnalyticsProvider
                         "channelName" => $channel_name,
                         "sourceName" => $source_name);
                 }
+                
+                $entry = array(
+                    "dayOfTheYear" => $this->DayOfYear2Date($row["dayoftheyear"]),
+                    "numberOfSources" => $row["numberofsources"],
+                    "channelId" => $row["channelId"],
+                    "channelName" => $channel_name,
+                    "sourceName" => $source_name);
 
                 $request->Result[] = $entry;
             }

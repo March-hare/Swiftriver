@@ -158,7 +158,6 @@ class ContentByChannelOverTimeAnalyticsProvider
                         "channelId" => $row["channelId"],
                         "channelName" => $channel_name);
                 }
-                
                 $request->Result[] = $entry;
             }
         }

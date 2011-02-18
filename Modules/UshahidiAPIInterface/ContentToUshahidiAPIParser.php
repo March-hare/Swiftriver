@@ -2,8 +2,8 @@
 namespace Swiftriver\UshahidiAPIInterface;
 class ContentToUshahidiAPIParser {
     /**
-     * Given a Content items, this function parses the properties of the
-     * content item into the format required by the Ushahidi API.
+     * Given content items, this function parses the properties of the
+     * content into the format required by the Ushahidi API.
      *
      * @param \Swiftriver\Core\ObjectModel\Content $content
      * @return string[] parameters
@@ -74,7 +74,7 @@ class ContentToUshahidiAPIParser {
     }
 
     /**
-     * Returns the comma seporated list of Ushahidi categories
+     * Returns the comma separated list of Ushahidi categories
      *
      * @param \Swiftriver\Core\ObjectModel\Content $content
      * @return string
