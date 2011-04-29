@@ -35,7 +35,7 @@ class PushToChannel extends ChannelServicesBase {
 
         $logger->log("Core::Workflows::ChannelServices::PushToChannel::RunWorkflow [Extracting raw data]", \PEAR_LOG_DEBUG);
 
-        $raw_content = HTTP_RAW_POST_DATA;
+        $raw_content = file_get_contents('php://input');
 
         $logger->log("Core::Workflows::ChannelServices::PushToChannel::RunWorkflow [END: Fetching next Channel]", \PEAR_LOG_DEBUG);
 
