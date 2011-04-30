@@ -19,11 +19,11 @@ class SwiftriverPushParsingService {
      * @param String $raw_content
      * @return Swiftriver\Core\ObjectModel\Content[] $contentItems
      */
-    public function FetchContentFromChannel($parser, $raw_content) {
+    public function FetchContentFromChannel($parser, $raw_content, $post_content = null) {
         $logger = \Swiftriver\Core\Setup::GetLogger();
         $logger->log("Core::Modules::SiSPS::SwiftriverPushParsingService::FetchContentFromChannel [Method invoked]", \PEAR_LOG_DEBUG);
 
-        if(!isset($raw_content) || $raw_content == null) {
+        if((!isset($raw_content) || $raw_content == null) && (!isset($post_content) || $post_content == null)) {
             $logger->log("Core::Modules::SiSPS::SwiftriverPushParsingService::FetchContentFromChannel [The channel object param is null]", \PEAR_LOG_DEBUG);
             $logger->log("Core::Modules::SiSPS::SwiftriverPushParsingService::FetchContentFromChannel [Method finished]", \PEAR_LOG_DEBUG);
             return;
@@ -44,7 +44,7 @@ class SwiftriverPushParsingService {
         try
         {
             //Get and parse all avaliable content items from the parser
-            $contentItems = $parser->PushAndParse($raw_content);
+            $contentItems = $parser->PushAndParse($raw_content, $post_content);
         }
         catch(\Exception $e)
         {

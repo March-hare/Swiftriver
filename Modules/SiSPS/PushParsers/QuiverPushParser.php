@@ -5,9 +5,10 @@ class QuiverPushParser implements IPushParser
     /**
      * Implementation of IPushParser::PushAndParse
      * @param $raw_content
+     * @param $post_content
      * @return \Swiftriver\Core\ObjectModel\Content[] contentItems
      */
-    public function PushAndParse($raw_content)
+    public function PushAndParse($raw_content, $post_content)
     {
         $logger = \Swiftriver\Core\Setup::GetLogger();
         $logger->log("Core::Modules::SiSPS::PushParsers::QuiverParser::PushAndParse [Method invoked]", \PEAR_LOG_DEBUG);
@@ -16,12 +17,10 @@ class QuiverPushParser implements IPushParser
 
         $settings = $this->get_settings();
 
-        $json = json_decode($raw_content);
-
         $source_name = $this->ReturnType();
         $source = \Swiftriver\Core\ObjectModel\ObjectFactories\SourceFactory::CreateSourceFromIdentifier($source_name, $settings["trusted"]);
         $source->name = $source_name;
-        $source->link = $json->linkfrom;
+        $source->link = $post_content["link"];
         $source->type = $this->ReturnType();
         $source->subType = $this->ReturnType();
 
@@ -31,9 +30,9 @@ class QuiverPushParser implements IPushParser
         //Fill the Content Item
         $item->text[] = new \Swiftriver\Core\ObjectModel\LanguageSpecificText(
                 null, //here we set null as we dont know the language yet
-                $json->title,
-                array($json->description));
-        $item->link = $json->linkfrom;
+                $post_content["title"],
+                array($post_content["description"]));
+        $item->link = $post_content["link"];
         $item->date = time();
 
         //Add the item to the Content array

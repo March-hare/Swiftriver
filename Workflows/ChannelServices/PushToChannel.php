@@ -43,8 +43,14 @@ class PushToChannel extends ChannelServicesBase {
 
         try
         {
+            $post_content = null;
+
+            if($_POST) {
+                $post_content = $_POST;
+            }
+
             $SiSPS = new \Swiftriver\Core\Modules\SiSPS\SwiftriverPushParsingService();
-            $rawContent = $SiSPS->FetchContentFromChannel($parser, $raw_content);
+            $rawContent = $SiSPS->FetchContentFromChannel($parser, $raw_content, $post_content);
         }
         catch (\Exception $e)
         {
