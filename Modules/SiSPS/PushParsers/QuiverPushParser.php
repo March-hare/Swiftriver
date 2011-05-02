@@ -6,9 +6,10 @@ class QuiverPushParser implements IPushParser
      * Implementation of IPushParser::PushAndParse
      * @param $raw_content
      * @param $post_content
+     * @param $get_content
      * @return \Swiftriver\Core\ObjectModel\Content[] contentItems
      */
-    public function PushAndParse($raw_content, $post_content)
+    public function PushAndParse($raw_content = null, $post_content = null, $get_content = null)
     {
         $logger = \Swiftriver\Core\Setup::GetLogger();
         $logger->log("Core::Modules::SiSPS::PushParsers::QuiverParser::PushAndParse [Method invoked]", \PEAR_LOG_DEBUG);

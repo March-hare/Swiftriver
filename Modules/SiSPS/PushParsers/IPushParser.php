@@ -11,9 +11,10 @@ interface IPushParser{
      *
      * @param String $raw_content (if content gets sent raw)
      * @param String $post_content (if content gets sent as HTTP POST)
+     * @param String $get_content (if content gets sent as HTTP GET)
      * @return Swiftriver\Core\ObjectModel\Content[] contentItems
      */
-    public function PushAndParse($raw_content = null, $post_content = null);
+    public function PushAndParse($raw_content = null, $post_content = null, $get_content = null);
 
     /**
      * This method returns a string describing the type of sources
