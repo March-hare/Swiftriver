@@ -161,6 +161,7 @@ include_once(dirname(__FILE__)."/Workflows/SourceServices/SourceServicesBase.php
 include_once(dirname(__FILE__)."/Workflows/PreProcessingSteps/PreProcessingStepsBase.php");
 include_once(dirname(__FILE__)."/Workflows/Analytics/AnalyticsWorkflowBase.php");
 include_once(Setup::Configuration()->ModulesDirectory."/SiSPS/Parsers/IParser.php");
+include_once(Setup::Configuration()->ModulesDirectory."/SiSPS/PushParsers/IPushParser.php");
 
 //include everything else
 $directories = array(
@@ -174,6 +175,7 @@ $directories = array(
     Setup::Configuration()->ModulesDirectory."/SiSW/",
     Setup::Configuration()->ModulesDirectory."/SiSPS/",
 );
+    
 foreach($directories as $dir) {
     $dirItterator = new \RecursiveDirectoryIterator($dir);
     $iterator = new \RecursiveIteratorIterator($dirItterator, \RecursiveIteratorIterator::SELF_FIRST);

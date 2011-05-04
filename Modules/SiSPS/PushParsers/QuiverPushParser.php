@@ -1,5 +1,5 @@
 <?php
-namespace Swiftriver\Core\Modules\PushParsers;
+namespace Swiftriver\Core\Modules\SiSPS\PushParsers;
 class QuiverPushParser implements IPushParser
 {
     /**
@@ -21,7 +21,7 @@ class QuiverPushParser implements IPushParser
         $source_name = $this->ReturnType();
         $source = \Swiftriver\Core\ObjectModel\ObjectFactories\SourceFactory::CreateSourceFromIdentifier($source_name, $settings["trusted"]);
         $source->name = $source_name;
-        $source->link = $post_content["link"];
+        $source->link = $get_content["u"];
         $source->type = $this->ReturnType();
         $source->subType = $this->ReturnType();
 
@@ -32,8 +32,8 @@ class QuiverPushParser implements IPushParser
         $item->text[] = new \Swiftriver\Core\ObjectModel\LanguageSpecificText(
                 null, //here we set null as we dont know the language yet
                 $post_content["title"],
-                array($post_content["description"]));
-        $item->link = $post_content["link"];
+                array($get_content["s"]));
+        $item->link = $get_content["u"];
         $item->date = time();
 
         //Add the item to the Content array

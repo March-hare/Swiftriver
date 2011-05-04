@@ -1,5 +1,5 @@
 <?php
-    include_once("../../channelservices/pushtochannel.php");
+    include_once(dirname(__FILE__)."/../../channelservices/pushtochannel.php");
 ?>
 <html>
     <head>

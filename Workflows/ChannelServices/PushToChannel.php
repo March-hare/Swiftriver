@@ -23,7 +23,7 @@ class PushToChannel extends ChannelServicesBase {
         $logger->log("Core::Workflows::ChannelServices::PushToChannel::RunWorkflow [Getting the appropriate parser]", \PEAR_LOG_DEBUG);
 
         $origin = $_GET["origin"];
-        $parser = ParserFactory::GetParserByPushOrigin($origin);
+        $parser = \Swiftriver\Core\Modules\SiSPS\ParserFactory::GetParserByPushOrigin($origin);
 
         if(is_null($parser)) {
             $logger->log("Core::Workflows::ChannelServices::PushToChannel::RunWorkflow [INFO: No Parser for origin '$origin']", \PEAR_LOG_DEBUG);
