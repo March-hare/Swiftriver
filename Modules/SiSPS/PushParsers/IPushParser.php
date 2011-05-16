@@ -17,6 +17,14 @@ interface IPushParser{
     public function PushAndParse($raw_content = null, $post_content = null, $get_content = null);
 
     /**
+     * This method returns a string describing the implementation details
+     * of this parser
+     *
+     * @return string - implementation details
+     */
+    public function GetDescription();
+
+    /**
      * This method returns a string describing the type of sources
      * it can parse. For example, the RSSParser returns "Feeds".
      *

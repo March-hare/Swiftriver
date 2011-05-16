@@ -54,7 +54,7 @@ class ParserFactory{
                 $filePath = $file->getPathname();
                 if(strpos($filePath, ".php") && !strpos($filePath, "IPushParser")) {
                     try{
-                        $typeString = "\\Swiftriver\\Core\\Modules\\SiSPS\\Parsers\\".$file->getFilename();
+                        $typeString = "\\Swiftriver\\Core\\Modules\\SiSPS\\PushParsers\\".$file->getFilename();
                         $type = str_replace(".php", "", $typeString);
                         $object = new $type();
                         if($object instanceof PushParsers\IPushParser) {
@@ -76,7 +76,7 @@ class ParserFactory{
         return $parsers;
     }
 
-        public static function ReturnAllAvailableParsers(){
+    public static function ReturnAllAvailableParsers(){
         $logger = \Swiftriver\Core\Setup::GetLogger();
         $logger->log("Core::Modules::SiSPS::ParserFactory::ReturnAllAvailableParsers [Method invoked]", \PEAR_LOG_DEBUG);
 
