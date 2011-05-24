@@ -20,6 +20,7 @@ class QuiverPushParser implements IPushParser
 
         $source_name = $this->ReturnType();
         $source = \Swiftriver\Core\ObjectModel\ObjectFactories\SourceFactory::CreateSourceFromIdentifier($source_name, $settings["trusted"]);
+        $source->parent = "Quiver";
         $source->name = $source_name;
         $source->link = $get_content["u"];
         $source->type = $this->ReturnType();
@@ -31,7 +32,7 @@ class QuiverPushParser implements IPushParser
         //Fill the Content Item
         $item->text[] = new \Swiftriver\Core\ObjectModel\LanguageSpecificText(
                 null, //here we set null as we dont know the language yet
-                $post_content["title"],
+                $get_content["s"],
                 array($get_content["s"]));
         $item->link = $get_content["u"];
         $item->date = time();
