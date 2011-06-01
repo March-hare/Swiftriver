@@ -4,6 +4,8 @@ class StartTwitterStreamer extends TwitterStreamingServicesBase
 {
     public function RunWorkflow($json, $key)
     {
+        parent::RegisterKey($key);
+    	
         $logger = \Swiftriver\Core\Setup::GetLogger();
         $logger->log("Core::ServiceAPI::TwitterStreamingServices::StartTwitterStreamer::RunWorkflow [Method invoked]", \PEAR_LOG_INFO);
 

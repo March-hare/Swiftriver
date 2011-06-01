@@ -4,6 +4,8 @@ class IsActive extends TwitterStreamingServicesBase
 {
     public function RunWorkflow($key)
     {
+        parent::RegisterKey($key);
+    	
         $filename = \Swiftriver\Core\Setup::Configuration()->CachingDirectory . "/TwitterStreamingController.go";
 
         if(!\file_exists($filename))

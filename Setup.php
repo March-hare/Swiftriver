@@ -5,6 +5,13 @@ namespace Swiftriver\Core;
  */
 class Setup
 {
+	/**
+	 * Static variable holding the current API key
+	 * 
+	 * @var string
+	 */
+	public static $requestKey; 
+	
     /**
      * Static variable for the core configuration handler
      *
@@ -46,9 +53,13 @@ class Setup
      */
     public static function GetLogger()
     {
+    	$logfileName = (self::$requestKey)
+    		? self::$requestKey . ".log"
+    		: "log.log";
+    	
         $log = new \Log("this message is ignored, however not supplying one throws an error :o/");
 
-        $logger = $log->singleton('file', Setup::Configuration()->CachingDirectory."/log.log" , '   ');
+        $logger = $log->singleton('file', Setup::Configuration()->CachingDirectory."/".$logfileName , '   ');
         
         if(!self::Configuration()->EnableDebugLogging)
         {
@@ -132,6 +143,17 @@ class Setup
         self::$dynamicModuleConfiguration = new Configuration\ConfigurationHandlers\DynamicModuleConfigurationHandler(dirname(__FILE__)."/Configuration/ConfigurationFiles/DynamicModuleConfiguration.xml");
 
         return self::$dynamicModuleConfiguration;
+    }
+    
+    /**
+     * Static function that accepts an api key and ensures that all the 
+     * DB elements, configuration and logging systems are activated and
+     * available for this key.
+     */
+    public static function RegisterKeyAndEnsureUser($apiKey)
+    {
+    	//TODO: Add the checking and setup of the DAL, Config and Logging systems 
+    	self::$requestKey = $apiKey;
     }
 }
 

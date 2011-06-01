@@ -3,6 +3,8 @@ namespace Swiftriver\Core\Workflows;
 /**
  * @author mg@swiftly.com
  */
+use Swiftriver\Core;
+
 class WorkflowBase
 {
     /**
@@ -40,6 +42,11 @@ class WorkflowBase
     {
         //BETA - accept all dev calls
         return $key == "swiftriver_dev";
+    }
+    
+    public function RegisterKey($key)
+    {
+    	Core\Setup::RegisterKeyAndEnsureUser($key);
     }
 }
 ?>

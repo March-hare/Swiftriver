@@ -4,6 +4,8 @@ class StopTwitterStreamer extends TwitterStreamingServicesBase
 {
     public function RunWorkflow($key)
     {
+        parent::RegisterKey($key);
+    	
         $logger = \Swiftriver\Core\Setup::GetLogger();
         $logger->log("Core::ServiceAPI::TwitterStreamingServices::StopTwitterStreamer::RunWorkflow [Method invoked]", \PEAR_LOG_INFO);
 

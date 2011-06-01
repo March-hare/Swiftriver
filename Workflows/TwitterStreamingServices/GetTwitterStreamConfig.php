@@ -4,6 +4,8 @@ class GetTwiterStreamConfig extends TwitterStreamingServicesBase
 {
     public function RunWorkflow($key)
     {
+        parent::RegisterKey($key);
+    	
         $filename = \Swiftriver\Core\Setup::Configuration()->CachingDirectory . "/TwitterStreamingController.tmp";
 
         if(!\file_exists($filename))
