@@ -3,6 +3,8 @@ namespace Swiftriver\Core;
 /**
  * @author mg[at]swiftly[dot]org
  */
+use Swiftriver\Core\DAL\Repositories;
+
 class Setup
 {
 	/**
@@ -11,6 +13,20 @@ class Setup
 	 * @var string
 	 */
 	public static $requestKey; 
+	
+	/**
+	 * Static variable used to hold the modules directory
+	 * 
+	 * @var string
+	 */
+	private static $modulesDirectory;
+	
+	/**
+	 * Static variable used to hold the caching directory
+	 * 
+	 * @var string
+	 */
+	private static $cachingDirectory;
 	
     /**
      * Static variable for the core configuration handler
@@ -46,6 +62,46 @@ class Setup
      * @var Configuration\ConfigurationHandlers\DynamicModuleConfigurationHandler
      */
     private static $dynamicModuleConfiguration;
+    
+    public static function InitWithAPIKey($apiKey)
+    {
+    	self::$requestKey = $apiKey;
+    	
+    	//TODO: Add the checking and setup of the DAL, Config and Logging systems that relies on the apiKey 
+    	
+    	//Here there are not even any config values for this api key so set them up
+    	$dataContentType = Setup::DALConfiguration()->DataContextType;
+    	if(empty($dataContentType))
+    	{
+    		//TODO this should be configurable - but where :) Pehaps from .template files? then we could do the PreProcessors etc. too
+    		Setup::DALConfiguration()->DataContextType = '\Swiftriver\Core\Modules\DataContext\MySql_MHI\DataContext';
+    		Setup::DALConfiguration()->DataContextDirectory = '/DataContext/MySql_MHI/';
+    		Setup::DALConfiguration()->Save();
+    		Setup::Configuration()->BaseLanguageCode = 'en';
+    		Setup::Configuration()->Save();
+    		
+    	}
+    	
+    	//Include the DAL Data Context Setup file
+    	$relativeDir = Setup::DALConfiguration()->DataContextDirectory;
+    	if(isset($relativeDir) && $relativeDir != "") 
+    	{
+    		$directory = Setup::ModulesDirectory().$relativeDir;
+    		if(file_exists($directory)) 
+    		{
+    			//include the setup file - if there is one
+    			$setupfile = $directory."/Setup.php";
+    			if(file_exists($setupfile))
+    				include_once($setupfile);
+    		}
+    	}
+    	
+    	//Use the repository to check for and if required to create the data context for this apikey
+    	$repository = new Repositories\APIKeyRepository();
+    	if(!$repository->IsRegisterdCoreAPIKey($apiKey))
+    		$repository->AddRegisteredAPIKey($apiKey);
+    }
+    
 
     /**
      * Get the shared instance for the logger
@@ -53,21 +109,56 @@ class Setup
      */
     public static function GetLogger()
     {
-    	$logfileName = (self::$requestKey)
-    		? self::$requestKey . ".log"
+    	$requestKey = self::$requestKey;
+    	$logfileName = ($requestKey != 'swiftriver')
+    		? $requestKey . ".log"
     		: "log.log";
     	
         $log = new \Log("this message is ignored, however not supplying one throws an error :o/");
 
-        $logger = $log->singleton('file', Setup::Configuration()->CachingDirectory."/".$logfileName , '   ');
+        $logger = $log->singleton('file', Setup::CachingDirectory()."/".$logfileName , '   ');
         
-        if(!self::Configuration()->EnableDebugLogging)
+        $logLevelMask = self::Configuration()->LogLevelMask;
+        
+        switch($logLevelMask)
         {
-            $mask = \Log::UPTO(\PEAR_LOG_INFO);
-            $logger->setMask($mask);
+        	case "debug": $mask = \Log::UPTO(\PEAR_LOG_DEBUG); break;
+        	case "notice": $mask = \Log::UPTO(\PEAR_LOG_NOTICE); break;
+        	case "info": $mask = \Log::UPTO(\PEAR_LOG_INFO); break;
+        	default: $mask = \Log::UPTO(\PEAR_LOG_ERR); break;
         }
+        
+        $logger->setMask($mask);
 
         return $logger;
+    }
+    
+    /**
+     * Static access to the modules directory path
+     * 
+     * @return string
+     */
+    public static function ModulesDirectory()
+    {
+    	if(isset(self::$modulesDirectory))
+    		return self::$modulesDirectory;
+    		
+    	self::$modulesDirectory = dirname(__FILE__) . "/Modules";
+    	return self::$modulesDirectory;
+    } 
+    
+    /**
+     * Static access to the cache directory path
+     * 
+     * @return string
+     */
+    public static function CachingDirectory()
+    {
+    	if(isset(self::$cachingDirectory))
+    		return self::$cachingDirectory;
+    		
+    	self::$cachingDirectory = dirname(__FILE__) . "/Cache";
+    	return self::$cachingDirectory;
     }
 
     /**
@@ -79,8 +170,13 @@ class Setup
     {
         if(isset(self::$configuration))
             return self::$configuration;
+            
+        $requestKey = self::$requestKey;
+        $configFileName = ($requestKey != 'swiftriver')
+    		? dirname(__FILE__)."/Configuration/ConfigurationFiles/" . $requestKey . "_CoreConfiguration.xml"
+    		: dirname(__FILE__)."/Configuration/ConfigurationFiles/CoreConfiguration.xml";
 
-        self::$configuration = new Configuration\ConfigurationHandlers\CoreConfigurationHandler(dirname(__FILE__)."/Configuration/ConfigurationFiles/CoreConfiguration.xml");
+        self::$configuration = new Configuration\ConfigurationHandlers\CoreConfigurationHandler($configFileName);
 
         return self::$configuration;
     }
@@ -95,7 +191,12 @@ class Setup
         if(isset(self::$dalConfiguration))
             return self::$dalConfiguration;
 
-        self::$dalConfiguration = new Configuration\ConfigurationHandlers\DALConfigurationHandler(dirname(__FILE__)."/Configuration/ConfigurationFiles/DALConfiguration.xml");
+        $requestKey = self::$requestKey;
+        $configFileName = ($requestKey != 'swiftriver')
+    		? dirname(__FILE__)."/Configuration/ConfigurationFiles/" .$requestKey . "_DALConfiguration.xml"
+    		: dirname(__FILE__)."/Configuration/ConfigurationFiles/DALConfiguration.xml";
+
+        self::$dalConfiguration = new Configuration\ConfigurationHandlers\DALConfigurationHandler($configFileName);
 
         return self::$dalConfiguration;
     }
@@ -110,7 +211,12 @@ class Setup
         if(isset(self::$preProcessingStepsConfiguration))
             return self::$preProcessingStepsConfiguration;
 
-        self::$preProcessingStepsConfiguration = new Configuration\ConfigurationHandlers\PreProcessingStepsConfigurationHandler(dirname(__FILE__)."/Configuration/ConfigurationFiles/PreProcessingStepsConfiguration.xml");
+        $requestKey = self::$requestKey;
+        $configFileName = ($requestKey != 'swiftriver')
+    		? dirname(__FILE__)."/Configuration/ConfigurationFiles/" . $requestKey . "_PreProcessingStepsConfiguration.xml"
+    		: dirname(__FILE__)."/Configuration/ConfigurationFiles/PreProcessingStepsConfiguration.xml";
+
+        self::$preProcessingStepsConfiguration = new Configuration\ConfigurationHandlers\PreProcessingStepsConfigurationHandler($configFileName);
 
         return self::$preProcessingStepsConfiguration;
     }
@@ -125,7 +231,12 @@ class Setup
         if(isset(self::$eventDistributionConfiguration))
             return self::$eventDistributionConfiguration;
 
-        self::$eventDistributionConfiguration = new Configuration\ConfigurationHandlers\EventDistributionConfigurationHandler(dirname(__FILE__)."/Configuration/ConfigurationFiles/EventDistributionConfiguration.xml");
+        $requestKey = self::$requestKey;
+        $configFileName = (self::$requestKey != 'swiftriver')
+    		? dirname(__FILE__)."/Configuration/ConfigurationFiles/" . $requestKey . "_EventDistributionConfiguration.xml"
+    		: dirname(__FILE__)."/Configuration/ConfigurationFiles/EventDistributionConfiguration.xml";
+
+        self::$eventDistributionConfiguration = new Configuration\ConfigurationHandlers\EventDistributionConfigurationHandler($configFileName);
 
         return self::$eventDistributionConfiguration;
     }
@@ -140,20 +251,14 @@ class Setup
         if(isset(self::$dynamicModuleConfiguration))
             return self::$dynamicModuleConfiguration;
 
-        self::$dynamicModuleConfiguration = new Configuration\ConfigurationHandlers\DynamicModuleConfigurationHandler(dirname(__FILE__)."/Configuration/ConfigurationFiles/DynamicModuleConfiguration.xml");
+        $requestKey = self::$requestKey;
+        $configFileName = ($requestKey != 'swiftriver')
+    		? dirname(__FILE__)."/Configuration/ConfigurationFiles/" .$requestKey . "_DynamicModuleConfiguration.xml"
+    		: dirname(__FILE__)."/Configuration/ConfigurationFiles/DynamicModuleConfiguration.xml";
+
+        self::$dynamicModuleConfiguration = new Configuration\ConfigurationHandlers\DynamicModuleConfigurationHandler($configFileName);
 
         return self::$dynamicModuleConfiguration;
-    }
-    
-    /**
-     * Static function that accepts an api key and ensures that all the 
-     * DB elements, configuration and logging systems are activated and
-     * available for this key.
-     */
-    public static function RegisterKeyAndEnsureUser($apiKey)
-    {
-    	//TODO: Add the checking and setup of the DAL, Config and Logging systems 
-    	self::$requestKey = $apiKey;
     }
 }
 
@@ -183,8 +288,8 @@ include_once(dirname(__FILE__)."/Workflows/SourceServices/SourceServicesBase.php
 include_once(dirname(__FILE__)."/Workflows/PreProcessingSteps/PreProcessingStepsBase.php");
 include_once(dirname(__FILE__)."/Workflows/Analytics/AnalyticsWorkflowBase.php");
 include_once(dirname(__FILE__)."/Workflows/TwitterStreamingServices/TwitterStreamingServicesBase.php");
-include_once(Setup::Configuration()->ModulesDirectory."/SiSPS/Parsers/IParser.php");
-include_once(Setup::Configuration()->ModulesDirectory."/SiSPS/PushParsers/IPushParser.php");
+include_once(Setup::ModulesDirectory()."/SiSPS/Parsers/IParser.php");
+include_once(Setup::ModulesDirectory()."/SiSPS/PushParsers/IPushParser.php");
 
 //include everything else
 $directories = array(
@@ -195,8 +300,8 @@ $directories = array(
     dirname(__FILE__)."/PreProcessing/",
     dirname(__FILE__)."/Workflows/",
     dirname(__FILE__)."/EventDistribution/",
-    Setup::Configuration()->ModulesDirectory."/SiSW/",
-    Setup::Configuration()->ModulesDirectory."/SiSPS/",
+    Setup::ModulesDirectory()."/SiSW/",
+    Setup::ModulesDirectory()."/SiSPS/",
 );
 foreach($directories as $dir) {
     $dirItterator = new \RecursiveDirectoryIterator($dir);
@@ -207,19 +312,6 @@ foreach($directories as $dir) {
             if(strpos($filePath, ".php")) {
                 include_once($filePath);
             }
-        }
-    }
-}
-
-//Include the DAL Data Context Setup file
-$relativeDir = Setup::DALConfiguration()->DataContextDirectory;
-if(isset($relativeDir) && $relativeDir != "") {
-    $directory = Setup::Configuration()->ModulesDirectory.$relativeDir;
-    if(file_exists($directory)) {
-        //include the setup file - if there is one
-        $setupfile = $directory."/Setup.php";
-        if(file_exists($setupfile)) {
-            include_once($setupfile);
         }
     }
 }

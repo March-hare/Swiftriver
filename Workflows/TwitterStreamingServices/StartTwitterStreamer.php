@@ -23,7 +23,7 @@ class StartTwitterStreamer extends TwitterStreamingServicesBase
         $channelRepository = new \Swiftriver\Core\DAL\Repositories\ChannelRepository();
         $channelRepository->SaveChannels(array($channel));
 
-        $filename = \Swiftriver\Core\Setup::Configuration()->CachingDirectory . "/TwitterStreamingController.tmp";
+        $filename = \Swiftriver\Core\Setup::CachingDirectory() . "/TwitterStreamingController.tmp";
 
         $fp = \fopen($filename, "w");
         $done = false;

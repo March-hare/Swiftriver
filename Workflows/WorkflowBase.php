@@ -41,12 +41,12 @@ class WorkflowBase
     public function CheckKey($key) 
     {
         //BETA - accept all dev calls
-        return $key == "swiftriver_dev";
+        return true;
     }
     
     public function RegisterKey($key)
     {
-    	Core\Setup::RegisterKeyAndEnsureUser($key);
+    	\Swiftriver\Core\Setup::InitWithAPIKey($key);
     }
 }
 ?>

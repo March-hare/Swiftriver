@@ -6,7 +6,7 @@ class IsActive extends TwitterStreamingServicesBase
     {
         parent::RegisterKey($key);
     	
-        $filename = \Swiftriver\Core\Setup::Configuration()->CachingDirectory . "/TwitterStreamingController.go";
+        $filename = \Swiftriver\Core\Setup::CachingDirectory() . "/TwitterStreamingController.go";
 
         if(!\file_exists($filename))
             return parent::FormatReturn('{"IsActive":false}');

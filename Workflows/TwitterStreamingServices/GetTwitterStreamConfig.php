@@ -6,7 +6,7 @@ class GetTwiterStreamConfig extends TwitterStreamingServicesBase
     {
         parent::RegisterKey($key);
     	
-        $filename = \Swiftriver\Core\Setup::Configuration()->CachingDirectory . "/TwitterStreamingController.tmp";
+        $filename = \Swiftriver\Core\Setup::CachingDirectory() . "/TwitterStreamingController.tmp";
 
         if(!\file_exists($filename))
             return parent::FormatMessage("no config");
