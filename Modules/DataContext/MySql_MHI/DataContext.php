@@ -65,8 +65,6 @@ class DataContext implements
 
             $result = $statement->execute(array(":key" => $key));
 
-            $logger->log($result, \PEAR_LOG_DEBUG);
-            
             if($result === false)
             	throw new \PDOException("Somthing went worg in the execution of the sql: " . $sql);
             
@@ -123,8 +121,6 @@ class DataContext implements
             $logger->log("Core::Modules::DataContext::MySQL_MHI::DataContext::AddRegisteredCoreAPIKey [END: Loading the SQL from file]", \PEAR_LOG_DEBUG);
             
             $logger->log("Core::Modules::DataContext::MySQL_MHI::DataContext::AddRegisteredCoreAPIKey [START: Running the bulk SQL file]", \PEAR_LOG_DEBUG);
-            
-            $logger->log($fileSql, \PEAR_LOG_DEBUG);
             
             $db->exec($fileSql);
             
