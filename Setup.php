@@ -69,17 +69,36 @@ class Setup
     	
     	//TODO: Add the checking and setup of the DAL, Config and Logging systems that relies on the apiKey 
     	
-    	//Here there are not even any config values for this api key so set them up
-    	$dataContentType = Setup::DALConfiguration()->DataContextType;
-    	if(empty($dataContentType))
+    	$filenameAddition = ($apiKey == "swiftriver") ? "" : $apiKey . "_";
+    	
+    	$configDirectory = dirname(__FILE__) . "/Configuration/ConfigurationFiles/";
+    	
+    	
+    	//If there is no cofig for this apiKey then copy over the base templates
+    	if(!file_exists($configDirectory . $filenameAddition . "DALConfiguration.xml"))
     	{
-    		//TODO this should be configurable - but where :) Pehaps from .template files? then we could do the PreProcessors etc. too
-    		Setup::DALConfiguration()->DataContextType = '\Swiftriver\Core\Modules\DataContext\MySql_MHI\DataContext';
-    		Setup::DALConfiguration()->DataContextDirectory = '/DataContext/MySql_MHI/';
-    		Setup::DALConfiguration()->Save();
-    		Setup::Configuration()->BaseLanguageCode = 'en';
-    		Setup::Configuration()->Save();
+			$templatesDirectory = $configDirectory . "ConfigurationFileTemplates/"; 
     		
+			$files = array
+    		(
+    			$templatesDirectory . "CoreConfiguration.xml" 				=> $configDirectory . $filenameAddition . "CoreConfiguration.xml",
+    			$templatesDirectory . "DALConfiguration.xml" 				=> $configDirectory . $filenameAddition . "DALConfiguration.xml",
+    			$templatesDirectory . "DynamicModuleConfiguration.xml" 		=> $configDirectory . $filenameAddition . "DynamicModuleConfiguration.xml",
+    			$templatesDirectory . "EventDistributionConfiguration.xml" 	=> $configDirectory . $filenameAddition . "EventDistributionConfiguration.xml",
+    			$templatesDirectory . "PreProcessingStepsConfiguration.xml" => $configDirectory . $filenameAddition . "PreProcessingStepsConfiguration.xml"
+    		);
+    		
+    		foreach($files as $source => $destination)
+    		{
+    			copy($source, $destination);
+    			/*
+    			$content = file_get_contents($source);
+    			$handle = fopen($destination, "w");
+    			fwrite($handle, $content);
+    			fclose($handle);
+    			chmod($destination, 0777);
+    			*/
+    		}
     	}
     	
     	//Include the DAL Data Context Setup file
@@ -287,6 +306,7 @@ include_once(dirname(__FILE__)."/Workflows/ChannelServices/ChannelServicesBase.p
 include_once(dirname(__FILE__)."/Workflows/SourceServices/SourceServicesBase.php");
 include_once(dirname(__FILE__)."/Workflows/PreProcessingSteps/PreProcessingStepsBase.php");
 include_once(dirname(__FILE__)."/Workflows/Analytics/AnalyticsWorkflowBase.php");
+include_once(dirname(__FILE__)."/Workflows/ApiKeys/ApiKeysWorkflowBase.php");
 include_once(dirname(__FILE__)."/Workflows/TwitterStreamingServices/TwitterStreamingServicesBase.php");
 include_once(Setup::ModulesDirectory()."/SiSPS/Parsers/IParser.php");
 include_once(Setup::ModulesDirectory()."/SiSPS/PushParsers/IPushParser.php");

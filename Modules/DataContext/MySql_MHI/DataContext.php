@@ -72,9 +72,11 @@ class DataContext implements
             
             $logger->log("Core::Modules::DataContext::MySQL_MHI::DataContext::IsRegisterdCoreAPIKey [END: Executing PDO statement]", \PEAR_LOG_DEBUG);
             
+            $found = $result->fetchColumn();
+            
             $logger->log("Core::Modules::DataContext::MySQL_MHI::DataContext::IsRegisterdCoreAPIKey [Method Finsihed]", \PEAR_LOG_DEBUG);
             
-            return true;
+            return $found == 1;
         }
         catch (\PDOException $e)
         {

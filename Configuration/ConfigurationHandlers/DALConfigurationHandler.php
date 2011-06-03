@@ -40,10 +40,10 @@ class DALConfigurationHandler extends BaseConfigurationHandler
             switch((string) $property["name"])
             {
                 case "DataContextType" :
-                    $this->DataContextType = $property["value"];
+                    $this->DataContextType = (string) $property["value"];
                     break;
                 case "DataContextPath" :
-                    $this->DataContextDirectory = $property["value"];
+                    $this->DataContextDirectory = (string) $property["value"];
                     break;
             }
         }

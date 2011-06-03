@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS {api_key}_Content_Tags (
 DROP PROCEDURE IF EXISTS ApiKeyExists;
 CREATE PROCEDURE ApiKeyExists ( IN apiKeyIn VARCHAR ( 256 ) )
     BEGIN
-	SELECT count(apiKey) FROM ApiKeys WHERE apiKey = apiKeyIn;
+	SELECT count(apiKey) as 'keyExists' FROM ApiKeys WHERE apiKey = apiKeyIn;
     END;
 
 DROP PROCEDURE IF EXISTS AddApiKey;
