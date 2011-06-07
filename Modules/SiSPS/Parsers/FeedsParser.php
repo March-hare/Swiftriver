@@ -86,6 +86,7 @@ class FeedsParser implements IParser
 
         foreach($simple_xml_document->posts->post as $simple_xml_post) {
             $contentdate = intval($simple_xml_post["unix-timestamp"]);
+            $contenttype = $simple_xml_post["type"];
 
             if(isset($lastSuccess) && is_numeric($lastSuccess) && isset($contentdate) && is_numeric($contentdate)) {
                 $lastSuccessGMTime = strtotime(gmdate("M d Y H:i:s", $lastSuccess));
@@ -101,18 +102,46 @@ class FeedsParser implements IParser
             
             //Get source data
             $source_name = "Tumblr";
+
             $source_name = ($source_name == null || $source_name == "") ? $feedUrl : $source_name . " @ " . $feedUrl;
             $source = \Swiftriver\Core\ObjectModel\ObjectFactories\SourceFactory::CreateSourceFromIdentifier($source_name, $channel->trusted);
-            $source->name = $source_name;
-            $source->parent = $channel->id;
-            $source->type = $channel->type;
-            $source->subType = $channel->subType;
 
-            //Extract all the relevant feedItem info
-            $array_post = (array) $simple_xml_post;
-            $title = isset($array_post["regular-title"]) ? $array_post["regular-title"] : $simple_xml_post["slug"];
-            $description = isset($array_post["regular-body"]) ? $array_post["regular-body"] : $array_post["photo-caption"];
-            $contentLink = $simple_xml_post["url"];
+            if($contenttype == "regular") {
+                $source->name = $source_name;
+                $source->parent = $channel->id;
+                $source->type = $channel->type;
+                $source->subType = $channel->subType;
+
+                //Extract all the relevant feedItem info
+                $array_post = (array) $simple_xml_post;
+                $title = isset($array_post["regular-title"]) ? $array_post["regular-title"] : $simple_xml_post["slug"];
+                $description = isset($array_post["regular-body"]) ? $array_post["regular-body"] : $array_post["photo-caption"];
+                $contentLink = $simple_xml_post["url"];
+            }
+            else if($contenttype == "photo") {
+                $source->name = $source_name;
+                $source->parent = $channel->id;
+                $source->type = $channel->type;
+                $source->subType = $channel->subType;
+
+                //Extract all the relevant feedItem info
+                $array_post = (array) $simple_xml_post;
+                $title = isset($array_post["photo-caption"]) ? "Image posted: ".$this->GenerateTextFromPhotoComment($array_post["photo-caption"])." ".$this->GenerateLink($simple_xml_post["url"]) : "No image description supplied";
+                $description = isset($array_post["photo-caption"]) ? $array_post["photo-caption"] : null;
+                $contentLink = $simple_xml_post["url"];
+            }
+            else if($contenttype == "video") {
+                $source->name = $source_name;
+                $source->parent = $channel->id;
+                $source->type = $channel->type;
+                $source->subType = $channel->subType;
+
+                //Extract all the relevant feedItem info
+                $array_post = (array) $simple_xml_post;
+                $title = isset($array_post["video-source"]) ? "Video posted: ".$array_post["video-source"] : "No video posted";
+                $description = isset($array_post["video-source"]) ? $array_post["video-source"] : null;
+                $contentLink = $simple_xml_post["url"];
+            }
 
             //Create a new Content item
             $item = \Swiftriver\Core\ObjectModel\ObjectFactories\ContentFactory::CreateContent($source);
@@ -237,6 +266,21 @@ class FeedsParser implements IParser
 
         //return the content array
         return $contentItems;
+    }
+
+    private function GenerateImageTag($image_url) {
+        return "<img src='".$image_url."'/>";
+    }
+
+    private function GenerateLink($link_url) {
+        return "<a href='$link_url' target='_blank'>Find it here</a>";
+    }
+
+    private function GenerateTextFromPhotoComment($comment) {
+        $photo_comment = ltrim($comment, "<p>");
+        $photo_comment = rtrim($photo_comment, "</p>");
+
+        return $photo_comment;
     }
 
     /**
