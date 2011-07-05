@@ -7,12 +7,17 @@ class DataContextConfigurationHandler extends \Swiftriver\Core\Configuration\Con
     /**
      * @var string
      */
-    public $DataBaseUrl;
+    public $Host;
 
     /**
      * @var string
      */
-    public $UserName;
+    public $Port;
+
+    /**
+     * @var string
+     */
+    public $User;
 
     /**
      * @var string
@@ -25,6 +30,16 @@ class DataContextConfigurationHandler extends \Swiftriver\Core\Configuration\Con
     public $Database;
 
     /**
+     * @var string
+     */
+    public $Persist;
+
+    /**
+     * @var string
+     */
+    public $ParsistKey;
+
+    /**
      * @var simpleXMLElement
      */
     public $xml;
@@ -35,17 +50,26 @@ class DataContextConfigurationHandler extends \Swiftriver\Core\Configuration\Con
         $this->xml = $xml;
         foreach($xml->properties->property as $property) {
             switch((string) $property["name"]) {
-                case "DataBaseUrl" :
-                    $this->DataBaseUrl = $property["value"];
+                case "Host" :
+                    $this->Host = $property["value"];
                     break;
-                case "UserName" :
-                    $this->UserName = $property["value"];
+                case "Port" :
+                    $this->Port= $property["value"];
+                    break;
+                case "User" :
+                    $this->User = $property["value"];
                     break;
                 case "Password" :
                     $this->Password = $property["value"];
                     break;
                 case "Database" :
                     $this->Database = $property["value"];
+                    break;
+                case "Persist" :
+                    $this->Persist = $property["value"];
+                    break;
+                case "PersistKey" :
+                    $this->PersistKey = $property["value"];
                     break;
             }
         }

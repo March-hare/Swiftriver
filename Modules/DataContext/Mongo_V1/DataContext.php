@@ -98,8 +98,11 @@ class DataContext implements
             }
 
             $db->where_in('id', $id_array);
-            $channels_query = $db->get('channels');
-            $channels = $channels_query->result();
+            $returned_channels = $db->get('channels');
+
+            foreach($returned_channels as $channel) {
+                $channels[] = (object)$channel;
+            }
         }
 
         $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::GetChannelsById [START: Building queries]", \PEAR_LOG_DEBUG);
@@ -137,23 +140,47 @@ class DataContext implements
             {
                 $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SaveChannels [START: Executing PDO statement for channel]", \PEAR_LOG_DEBUG);
 
-                $result = $db->insert("channels", array("id" => $channel->id,
-                    "name" => $channel->name,
-                    "type" => $channel->type,
-                    "subType" => $channel->subType,
-                    "active" => $channel->active,
-                    "inProcess" => $channel->inprocess,
-                    "nextRun" => $channel->nextrun,
-                    "timesrun" => $channel->timesrun,
-                    "updatePeriod" => $channel->updatePeriod,
-                    "lastSuccess" => $channel->lastSuccess,
-                    "deleted" => $channel->deleted,
-                    "trusted" => $channel->trusted,
-                    "parameters" => $channel->parameters));
+                $exists_result = $db->get_where("channels", array("id" => $channel->id));
 
-                if($result != TRUE)
+                $result = null;
+
+                if(count($exists_result) > 0) {
+                    $db->where("id", $channel->id);
+
+                    $result = $db->update("channels", array("name" => $channel->name,
+                        "type" => $channel->type,
+                        "subType" => $channel->subType,
+                        "active" => $channel->active,
+                        "inprocess" => $channel->inprocess,
+                        "nextRun" => $channel->nextrun,
+                        "timesrun" => $channel->timesrun,
+                        "updatePeriod" => $channel->updatePeriod,
+                        "lastSuccess" => $channel->lastSuccess,
+                        "deleted" => $channel->deleted,
+                        "trusted" => $channel->trusted,
+                        "parameters" => $channel->parameters));
+
+                    $db->where(array());
+                }
+                else {
+                    $result = $db->insert("channels", array("id" => $channel->id,
+                        "name" => $channel->name,
+                        "type" => $channel->type,
+                        "subType" => $channel->subType,
+                        "active" => $channel->active,
+                        "inprocess" => $channel->inprocess,
+                        "nextRun" => $channel->nextrun,
+                        "timesrun" => $channel->timesrun,
+                        "updatePeriod" => $channel->updatePeriod,
+                        "lastSuccess" => $channel->lastSuccess,
+                        "deleted" => $channel->deleted,
+                        "trusted" => $channel->trusted,
+                        "parameters" => $channel->parameters));
+                }
+
+                if($result === FALSE)
                 {
-                    $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SaveChannels [An Exception was thrown by the PDO framwork]", \PEAR_LOG_ERR);
+                    $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SaveChannels [An Exception was thrown by the Mongo DB framwork]", \PEAR_LOG_ERR);
 
                     $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SaveChannels [Could not insert a new channel into the Mongo Collection]", \PEAR_LOG_ERR);
                 }
@@ -244,9 +271,7 @@ class DataContext implements
 
         $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SelectNextDueChannel [Method Invoked]", \PEAR_LOG_DEBUG);
 
-        $channel = null;
-
-        $db = self::MongoDatabase();
+        $channels = array();
 
         if(!isset($time) || $time == null)
         {
@@ -257,34 +282,25 @@ class DataContext implements
 
         try
         {
+            $db = self::MongoDatabase();
+
             $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SelectNextDueChannel [START: Executing statement]", \PEAR_LOG_DEBUG);
 
-            $result = $db->get_where("channels", array("nextRun <= $time"));
+            $results = $db->get_where("channels", array("nextRun" => array('$lte' => $time), "active" => true, "inprocess" => false));
 
-            $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SelectNextDueChannel [END: Executing PDO statment]", \PEAR_LOG_DEBUG);
+            $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SelectNextDueChannel [END: Executing Mongo statment]", \PEAR_LOG_DEBUG);
 
-            if(isset($result) && $result != null && $result !== 0)
+            if(count($results) > 0)
             {
                 $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SelectNextDueChannel [START: Looping over results]", \PEAR_LOG_DEBUG);
 
-                $results = $result->result();
+                $row = $results[0];
 
-                foreach($results as $row)
-                {
-                    $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SelectNextDueChannel [START: Constructing Channel Object from json]", \PEAR_LOG_DEBUG);
+                $channel = (object)$row;
 
-                    $channel = $row;
+                $channel->inprocess = true;
 
-                    $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SelectNextDueChannel [END: Constructing Channel Object from json]", \PEAR_LOG_DEBUG);
-
-                    $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SelectNextDueChannel [START: Marking channel as in process]", \PEAR_LOG_DEBUG);
-
-                    $channel->inprocess = true;
-
-                    self::SaveChannels(array($channel));
-
-                    $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SelectNextDueChannel [END: Marking channel as in process]", \PEAR_LOG_DEBUG);
-                }
+                self::SaveChannels(array($channel));
 
                 $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SelectNextDueChannel [END: Looping over results]", \PEAR_LOG_DEBUG);
             }
@@ -310,7 +326,13 @@ class DataContext implements
     public static function ListAllChannels()
     {
         $db = self::MongoDatabase();
-        $channels = $db->get("channels");
+        $channels_result = $db->get("channels");
+
+        $channels = array();
+
+        foreach($channels_result as $channel) {
+            $channels[] = (object) $channel;
+        }
 
         return $channels;
     }
@@ -347,13 +369,25 @@ class DataContext implements
             {
                 $source = $item->source;
 
-                $sourceParams = array (
-                    $source,
-                    "channelId" => $source->parent);
+                $sourceParams = (array)$source;
+
+                $sourceParams["channelId"] = $source->parent;
 
                 $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SaveContent [START: Saving content source]", \PEAR_LOG_DEBUG);
 
-                $result = $db->insert("sources", $sourceParams);
+                // Tally to see if the source id already exists
+
+                $source_result = $db->get_where("sources", array("id" => $source->id));
+
+                $result = null;
+
+                if(count($source_result) > 0) {
+                    $db->where("id", $source->id);
+                    $result = $db->update("sources", $sourceParams);
+                }
+                else {
+                    $result = $db->insert("sources", $sourceParams);
+                }
 
                 if($result != TRUE)
                 {
@@ -362,15 +396,29 @@ class DataContext implements
                     $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SaveContent [Could not save the source information]", \PEAR_LOG_ERR);
                 }
 
+                $db->where(array());
+
                 $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SaveContent [END: Saving content source]", \PEAR_LOG_DEBUG);
 
-                $contentParams = array (
-                    $item,
-                    "sourceId" => $source->id);
+                $contentParams = (array)$item;
+
+                $contentParams["sourceId"] = $source->id;
+
+                // Tally to see if content item already exists
+
+                $content_result = $db->get_where("content", array("id" => $contentParams->id));
+
+                if(count($content_result) > 0) {
+                    $db->where("id", $contentParams->id);
+                    $result = $db->update("content", $contentParams);
+                }
+                else {
+                    $result = $db->insert("content", $contentParams);
+                }
+
+                $db->where(array());
 
                 $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SaveContent [START: Saving content]", \PEAR_LOG_DEBUG);
-
-                $result = $db->insert("content", $contentParams);
 
                 if($result !=  TRUE)
                 {
@@ -397,9 +445,16 @@ class DataContext implements
 
                         $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SaveContent [START: Saving Tag]", \PEAR_LOG_DEBUG);
 
-                        $result = $db->insert("tags", $tagParams);
+                        $tag_result = $db->get_where("tags", array("id" => $tagParams["tagId"]));
 
-                        if($result != TRUE)
+                        if(count($tag_result) < 1) {
+                            $result = $db->insert("tags", array("id" => $tagParams["tagId"], "type" => $tag->type, "text" => $tagParams["tagText"]));
+                        }
+                        else {
+                            $result = TRUE;
+                        }
+
+                        if($result === FALSE)
                         {
                             $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SaveContent [An Exception was thrown by the MongoDB framwork]", \PEAR_LOG_ERR);
                             
@@ -407,12 +462,11 @@ class DataContext implements
                         }
 
                         $content_tags = $db->get_where("content_tags", array("contentId" => $item->id, "tagId" => \md5(\strtolower($tag->text))));
-                        $content_tags = $content_tags->result();
 
                         if(\count($content_tags) < 1) {
                             $result = $db->insert("content_tags", array("contentId" => $item->id, "tagId" => \md5(\strtolower($tag->text))));
 
-                            if($result != TRUE)
+                            if($result === FALSE)
                             {
                                 $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SaveContent [An Exception was thrown by the MongoDB framwork]", \PEAR_LOG_ERR);
 
@@ -474,8 +528,7 @@ class DataContext implements
 
             $db->where_in("id", $ids);
 
-            $result = $db->get("content");
-            $content_items = $result->result();
+            $content_items = $db->get("content");
 
             $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::GetContent [END: Executing PDO statement]", \PEAR_LOG_DEBUG);
 
@@ -487,10 +540,10 @@ class DataContext implements
 
                 foreach($content_items as $row)
                 {
-                    $source = $db->get_where("sources", array("id" => $row->sourceId));
-                    $contentjson = json_encode($row);
+                    $source = $db->get_where("sources", array("id" => $row["sourceId"]));
+                    $contentjson = json_encode(((object)$row));
                     $item = \Swiftriver\Core\ObjectModel\ObjectFactories\ContentFactory::CreateContent($source, $contentjson);
-                    $content[] = $item;
+                    $content[] = (object)$item;
                 }
 
                 $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::GetContent [END: Looping over results]", \PEAR_LOG_DEBUG);
@@ -500,19 +553,18 @@ class DataContext implements
 
             foreach($content as $item)
             {
-                $tag_result = $db->get_where("content_tags", array("contentId" => $item->id));
-                $tag_result = $tag_result->result();
+                $tag_result = $db->get_where("content_tags", array("contentId" => $item["id"]));
 
                 if(count($tag_result) > 0) {
                     foreach($tag_result as $tag_row) {
-                        $result = $db->get_where("tags", $tag_row->tagId);
+                        $result = $db->get_where("tags", $tag_row["tagId"]);
 
                         if(count($result) > 0)
                         {
                             $item->tags = array();
 
                             foreach($result as $row)
-                                $item->tags[] = new \Swiftriver\Core\ObjectModel\Tag($row->text, $row->type);
+                                $item->tags[] = new \Swiftriver\Core\ObjectModel\Tag($row["text"], $row["type"]);
                         }
 
                         $db = null;
@@ -637,7 +689,11 @@ class DataContext implements
             $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::GetSourcesById [START: Getting sources]", \PEAR_LOG_DEBUG);
 
             $db->where_in("id", $ids);
-            $sources = $db->get("sources");
+            $sources_result = $db->get("sources");
+
+            foreach($sources_result as $source) {
+                $sources[] = (object)$source;
+            }
 
 
             $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::GetSourcesById [END: Getting sources]", \PEAR_LOG_DEBUG);
@@ -672,10 +728,11 @@ class DataContext implements
 
         try
         {
-            $result = $db->get("sources");
-            $sources = $result->result();
+            $sources_result = $db->get("sources");
 
-            $db = null;
+            foreach($sources_result as $source) {
+                $sources[] = (object)$source;
+            }
         }
         catch (\MongoException $e)
         {
@@ -683,6 +740,8 @@ class DataContext implements
 
             $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::ListAllSources [$e]", \PEAR_LOG_ERR);
         }
+
+        $db = null;
 
         $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::ListAllSources [Method finished]", \PEAR_LOG_DEBUG);
 
