@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration name="Mongo API Key Data Context Configuration">
+    <properties>
+        <property name="Host" displayName="The database host" type="string" value="localhost"/>
+        <property name="Port" displayName="The database port" type="string" value="27017"/>
+        <property name="User" displayName="The database user" type="string" value="dbuser"/>
+        <property name="Database" displayName="The database name" type="string" value="swiftriver"/>
+        <property name="Password" displayName="The database password" type="string" value="dbpassword"/>
+        <property name="Persist" displayName="The database persist setting" type="string" value="dbpersist"/>
+        <property name="PersistKey" displayName="The database persistance key" type="string" value="dbpersistkey"/>
+    </properties>
+</configuration>
