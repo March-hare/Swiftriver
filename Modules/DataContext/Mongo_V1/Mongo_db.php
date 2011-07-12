@@ -38,7 +38,7 @@ class Mongo_db
 	{
 		if(!class_exists('Mongo'))
 		{
-			trigger_error("The MongoDB PECL extension has not been installed or enabled", 500);
+			trigger_error("The MongoDB PECL extension has not been installed or enabled", E_USER_ERROR);
 		}
 
 		$this->connection_string($host, $port, $user, $pass, $dbname, $persist, $persist_key);
@@ -57,7 +57,7 @@ class Mongo_db
 	{
 		if(empty($database))
 		{
-			trigger_error("To switch MongoDB databases, a new database name must be specified", 500);
+			trigger_error("To switch MongoDB databases, a new database name must be specified", E_USER_ERROR);
 		}
 		$this->dbname = $database;
 		try
@@ -67,7 +67,7 @@ class Mongo_db
 		}
 		catch(Exception $e)
 		{
-			trigger_error("Unable to switch Mongo Databases: {$e->getMessage()}", 500);
+			trigger_error("Unable to switch Mongo Databases: {$e->getMessage()}", E_USER_ERROR);
 		}
 	}
 
@@ -485,7 +485,7 @@ class Mongo_db
 	 {
 	 	if(empty($collection))
 	 	{
-	 		trigger_error("In order to retreive documents from MongoDB, a collection name must be passed", 500);
+	 		trigger_error("In order to retreive documents from MongoDB, a collection name must be passed", E_USER_ERROR);
 	 	}
 	 	$results = array();
 	 	$documents = $this->db->{$collection}->find($this->wheres, $this->selects)->limit((int) $this->limit)->skip((int) $this->offset)->sort($this->sorts);
@@ -514,7 +514,7 @@ class Mongo_db
 	 {
 	 	if(empty($collection))
 	 	{
-	 		trigger_error("In order to retreive a count of documents from MongoDB, a collection name must be passed", 500);
+	 		trigger_error("In order to retreive a count of documents from MongoDB, a collection name must be passed", E_USER_ERROR);
 	 	}
 	 	$count = $this->db->{$collection}->find($this->wheres)->limit((int) $this->limit)->skip((int) $this->offset)->count();
 	 	$this->clear();
@@ -534,12 +534,12 @@ class Mongo_db
 	 public function insert($collection = "", $data = array()) {
 	 	if(empty($collection))
 	 	{
-	 		trigger_error("No Mongo collection selected to insert into", 500);
+	 		trigger_error("No Mongo collection selected to insert into", E_USER_ERROR);
 	 	}
 
 	 	if(count($data) == 0 || !is_array($data))
 	 	{
-	 		trigger_error("Nothing to insert into Mongo collection or insert is not an array", 500);
+	 		trigger_error("Nothing to insert into Mongo collection or insert is not an array", E_USER_ERROR);
 	 	}
 
 	 	try
@@ -552,7 +552,7 @@ class Mongo_db
 	 	}
 	 	catch(MongoCursorException $e)
 	 	{
-	 		trigger_error("Insert of data into MongoDB failed: {$e->getMessage()}", 500);
+	 		trigger_error("Insert of data into MongoDB failed: {$e->getMessage()}", E_USER_ERROR);
 	 	}
 
 	 }
@@ -571,12 +571,12 @@ class Mongo_db
 	 {
 	 	if(empty($collection))
 	 	{
-	 		trigger_error("No Mongo collection selected to update", 500);
+	 		trigger_error("No Mongo collection selected to update", E_USER_ERROR);
 	 	}
 
 	 	if(count($data) == 0 || !is_array($data))
 	 	{
-	 		trigger_error("Nothing to update in Mongo collection or update is not an array", 500);
+	 		trigger_error("Nothing to update in Mongo collection or update is not an array", E_USER_ERROR);
 	  }
 
 	 	try
@@ -586,7 +586,7 @@ class Mongo_db
 	 	}
 	 	catch(MongoCursorException $e)
 	 	{
-	 		trigger_error("Update of data into MongoDB failed: {$e->getMessage()}", 500);
+	 		trigger_error("Update of data into MongoDB failed: {$e->getMessage()}", E_USER_ERROR);
 	 	}
 
 	 }
@@ -604,12 +604,12 @@ class Mongo_db
 	 public function update_all($collection = "", $data = array()) {
 	 	if(empty($collection))
 	 	{
-	 		trigger_error("No Mongo collection selected to update", 500);
+	 		trigger_error("No Mongo collection selected to update", E_USER_ERROR);
 	 	}
 
 	 	if(count($data) == 0 || !is_array($data))
 	 	{
-	 		trigger_error("Nothing to update in Mongo collection or update is not an array", 500);
+	 		trigger_error("Nothing to update in Mongo collection or update is not an array", E_USER_ERROR);
 	 	}
 
 	 	try
@@ -619,7 +619,7 @@ class Mongo_db
 	 	}
 	 	catch(MongoCursorException $e)
 	 	{
-	 		trigger_error("Update of data into MongoDB failed: {$e->getMessage()}", 500);
+	 		trigger_error("Update of data into MongoDB failed: {$e->getMessage()}", E_USER_ERROR);
 	 	}
 
 	 }
@@ -638,7 +638,7 @@ class Mongo_db
 	 {
 	 	if(empty($collection))
 	 	{
-	 		trigger_error("No Mongo collection selected to delete from", 500);
+	 		trigger_error("No Mongo collection selected to delete from", E_USER_ERROR);
 	 	}
 
 	 	try
@@ -648,7 +648,7 @@ class Mongo_db
 	 	}
 	 	catch(MongoCursorException $e)
 	 	{
-	 		trigger_error("Delete of data into MongoDB failed: {$e->getMessage()}", 500);
+	 		trigger_error("Delete of data into MongoDB failed: {$e->getMessage()}", E_USER_ERROR);
 	 	}
 
 	 }
@@ -667,7 +667,7 @@ class Mongo_db
   {
      if(empty($collection))
      {
-	     trigger_error("No Mongo collection selected to delete from", 500);
+	     trigger_error("No Mongo collection selected to delete from", E_USER_ERROR);
 	 	 }
 
 	 	try
@@ -677,7 +677,7 @@ class Mongo_db
 	 	}
 	 	catch(MongoCursorException $e)
 	 	{
-	 		trigger_error("Delete of data into MongoDB failed: {$e->getMessage()}", 500);
+	 		trigger_error("Delete of data into MongoDB failed: {$e->getMessage()}", E_USER_ERROR);
 	 	}
 
   }
@@ -698,12 +698,12 @@ class Mongo_db
 	{
 		if(empty($collection))
 		{
-	 		trigger_error("No Mongo collection specified to add index to", 500);
+	 		trigger_error("No Mongo collection specified to add index to", E_USER_ERROR);
 	 	}
 
 	 	if(empty($keys) || !is_array($keys))
 	 	{
-	 		trigger_error("Index could not be created to MongoDB Collection because no keys were specified", 500);
+	 		trigger_error("Index could not be created to MongoDB Collection because no keys were specified", E_USER_ERROR);
     }
 
 	 	foreach($keys as $col => $val)
@@ -725,7 +725,7 @@ class Mongo_db
 	 	}
 	 	else
 	 	{
-	 		trigger_error("An error occured when trying to add an index to MongoDB Collection", 500);
+	 		trigger_error("An error occured when trying to add an index to MongoDB Collection", E_USER_ERROR);
 		}
 	}
 
@@ -747,12 +747,12 @@ class Mongo_db
 	{
 		if(empty($collection))
 		{
-	 		trigger_error("No Mongo collection specified to remove index from", 500);
+	 		trigger_error("No Mongo collection specified to remove index from", E_USER_ERROR);
 	 	}
 
 	 	if(empty($keys) || !is_array($keys))
 	 	{
-	 		trigger_error("Index could not be removed from MongoDB Collection because no keys were specified", 500);
+	 		trigger_error("Index could not be removed from MongoDB Collection because no keys were specified", E_USER_ERROR);
 	 	}
 
 	 	if($this->db->{$collection}->deleteIndex($keys) == TRUE)
@@ -762,7 +762,7 @@ class Mongo_db
 	 	}
 	 	else
 	 	{
-	 		trigger_error("An error occured when trying to remove an index from MongoDB Collection", 500);
+	 		trigger_error("An error occured when trying to remove an index from MongoDB Collection", E_USER_ERROR);
 		}
 	}
 
@@ -779,7 +779,7 @@ class Mongo_db
 	public function remove_all_indexes($collection = "") {
 		if(empty($collection))
 		{
-	 		trigger_error("No Mongo collection specified to remove all indexes from", 500);
+	 		trigger_error("No Mongo collection specified to remove all indexes from", E_USER_ERROR);
 	 	}
 
 	 	$this->db->{$collection}->deleteIndexes();
@@ -799,7 +799,7 @@ class Mongo_db
 	public function list_indexes($collection = "") {
 		if(empty($collection))
 		{
-	 		trigger_error("No Mongo collection specified to remove all indexes from", 500);
+	 		trigger_error("No Mongo collection specified to remove all indexes from", E_USER_ERROR);
 	 	}
 	 	return($this->db->{$collection}->getIndexInfo());
 	}
@@ -817,7 +817,7 @@ class Mongo_db
 	 {
 	   if(empty($collection))
 		 {
-	     trigger_error("No Mongo collection specified to drop from database", 500);
+	     trigger_error("No Mongo collection specified to drop from database", E_USER_ERROR);
 	   }
 	   $this->db->{$collection}->drop();
 	   return TRUE;
@@ -850,7 +850,7 @@ class Mongo_db
 		}
 		catch(\MongoConnectionException $e)
 		{
-			trigger_error("Unable to connect to MongoDB: {$e->getMessage()}", 500);
+			trigger_error("Unable to connect to MongoDB: {$e->getMessage()}", E_USER_ERROR);
 		}
 	}
 
@@ -876,12 +876,12 @@ class Mongo_db
 
 		if(empty($this->host))
 		{
-			trigger_error("The Host must be set to connect to MongoDB", 500);
+			trigger_error("The Host must be set to connect to MongoDB", E_USER_ERROR);
 		}
 
 		if(empty($this->dbname))
 		{
-			trigger_error("The Database must be set to connect to MongoDB", 500);
+			trigger_error("The Database must be set to connect to MongoDB", E_USER_ERROR);
 		}
 
 		if(!empty($this->user) && !empty($this->pass))

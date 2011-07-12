@@ -273,6 +273,8 @@ class DataContext implements
 
         $channels = array();
 
+        $channel = null;
+
         if(!isset($time) || $time == null)
         {
             $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SelectNextDueChannel [No time supplied, setting time to now]", \PEAR_LOG_DEBUG);
@@ -593,12 +595,133 @@ class DataContext implements
      */
     public static function GetContentList($parameters)
     {
-        $totalCount = 0;
+        $logger = \Swiftriver\Core\Setup::GetLogger();
+
+        $content_wheres_array = array();
+
+        $num_content_items = 0;
+        $num_sources = 0;
+
+        $content_array = array();
+
+        try
+        {
+            $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::GetContentList [Method invoked]", \PEAR_LOG_DEBUG);
+
+            $db = self::MongoDatabase();
+
+            $time = (\key_exists("time", $parameters)) ? $parameters["time"] : \time();
+            $content_wheres_array["date"] = array('$lte' => $time);
+
+            $state = (key_exists("state", $parameters)) ? $parameters["state"] : null;
+            if($state != null)
+                $content_wheres_array["state"] = $state;
+
+            $minVeracity = (key_exists("minVeracity", $parameters)) ? $parameters["minVeracity"] : null;
+            if($minVeracity != null || $minVeracity === 0) {
+                $content_wheres_array["source.score"] = array('$gte' => $minVeracity);
+            }
+
+            $maxVeracity = (key_exists("maxVeracity", $parameters)) ? $parameters["maxVeracity"] : null;
+            if($maxVeracity != null) {
+                if($minVeracity != null || $minVeracity === 0) {
+                    $content_wheres_array["source.score"] = array('$lte' => $maxVeracity, '$gte' => $minVeracity);
+                }
+                else {
+                    $content_wheres_array["source.score"] = array('$lte' => $maxVeracity);
+                }
+
+                if(($maxVeracity === 0) || ($minVeracity === 0)) {
+                    $source_or_wheres_array["score"] = null;
+                }
+            }
+
+            $type = (key_exists("type", $parameters)) ? $parameters["type"] : null;
+            if($type != null)
+                $content_wheres_array["source.type"] = $type;
+
+            $subType = (key_exists("subType", $parameters)) ? $parameters["subType"] : null;
+            if($subType != null)
+                $content_wheres_array["source.subType"] = $subType;
+
+            $source = (key_exists("source", $parameters)) ? $parameters["source"] : null;
+            if($source != null)
+                $content_wheres_array["source.id"] = $source;
+
+            $tag_result = array();
+
+            $tags = (\key_exists("tags", $parameters)) ? $parameters["tags"] : null;
+
+            if($tags != null) {
+                foreach($tags as $tag) {
+                    $content_wheres_array["tags.text"] = $tag;
+                }
+            }
+
+            $pageSize = (key_exists("pageSize", $parameters)) ? $parameters["pageSize"] : null;
+
+            $pageStart = (key_exists("pageStart", $parameters)) ? $parameters["pageStart"] : null;
+
+            $db->limit($pageSize);
+            $db->offset($pageStart);
+            $db->where($content_wheres_array);
+            $content_array = $db->get("content");
+            $num_content_items = \count($content_array);
+
+            $types = array(
+                "type" => "list",
+                "key" => "tags",
+                "selected" => $type != null,
+                "facets" => $tag_result);
+            $navigation["Tags"] = $types;
+
+            if($subType == null)
+            {
+                $types = array(
+                    "type" => "list",
+                    "key" => "type",
+                    "selected" => $type != null,
+                    "facets" => array("name" => $type, "id" => $type, "count" => $num_sources));
+                $navigation["Channels"] = $types;
+            }
+
+            if($type != null && $source == null)
+            {
+                $subTypes = array(
+                    "type" => "list",
+                    "key" => "subType",
+                    "selected" => $subType != null,
+                    "facets" => array("name" => $subType, "id" => $subType, "count" => $num_sources));
+                $navigation["Sub Channels"] = $subTypes;
+            }
+
+            if($subType != null && $type != null)
+            {
+                $sources = array(
+                    "type" => "list",
+                    "key" => "source",
+                    "selected" => $source != null,
+                    "facets" => array("name" => $source, "id" => $content_array[0]["source"][0]["name"], "count" => $num_sources));
+                $navigation["Sources"] = $sources;
+            }
+        }
+        catch (\MongoException $e)
+        {
+            $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::GetContentList [An Exception was thrown:]", \PEAR_LOG_ERR);
+
+            $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::GetContentList [$e]", \PEAR_LOG_ERR);
+        }
+
+        $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::GetContentList [Method finished]", \PEAR_LOG_DEBUG);
+
         $content = array();
-        $navigation = array();
-        
+
+        foreach($content_array as $content_item) {
+            $content[] = (object) $content_item;
+        }
+
         return array (
-            "totalCount" => $totalCount,
+            "totalCount" => $num_content_items,
             "contentItems" => $content,
             "navigation" => $navigation
         );
