@@ -18,6 +18,10 @@ class BaseAnalyticsClass
         {
             case "\Swiftriver\Core\Modules\DataContext\MySql_V2\DataContext":
                 return \Swiftriver\Core\Modules\DataContext\MySql_V2\DataContext::PDOConnection();
+            break;
+            case "\Swiftriver\Core\Modules\DataContext\Mongo_V1\DataContext":
+                return \Swiftriver\Core\Modules\DataContext\Mongo_V1\DataContext::MongoDatabase();
+            break;
             default :
                 return null;
         }

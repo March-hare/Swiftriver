@@ -85,11 +85,13 @@ class AnalyticsEngine
 
                         $logger->log("Core::Analytics::AnalyticsEngine::__construct [END: Instanciating the provider $type]", \PEAR_LOG_DEBUG);
 
-                        if(!($instance instanceof IAnalyticsProvider))
+                        if(!($instance instanceof IAnalyticsProvider)) {
                             continue;
+                        }
 
-                        if(!\in_array($dataContextType, $instance->DataContentSet()))
+                        if(\in_array($dataContextType, $instance->DataContentSet())) {
                             continue;
+                        }
 
                         $logger->log("Core::Analytics::AnalyticsEngine::__construct [START: Adding the provider $type]", \PEAR_LOG_DEBUG);
 
@@ -145,16 +147,23 @@ class AnalyticsEngine
 
         $dataContextType = \Swiftriver\Core\Setup::DALConfiguration()->DataContextType;
 
+        $logger->log("Core::Analytics::AnalyticsEngine::__construct [DataContext Type: $dataContextType]", \PEAR_LOG_INFO);
+
         $request->DataContextType = $dataContextType;
 
         $providerType = $request->RequestType;
 
         $logger->log("Core::Analytics::AnalyticsEngine::__construct [START: Looking for matching provider]", \PEAR_LOG_DEBUG);
 
+        $logger->log("Core::Analytics::AnalyticsEngine::__construct [Number of analytics providers: ".\count($this->analyticsProviders)."]", \PEAR_LOG_INFO);
+
         foreach($this->analyticsProviders as $analyticsProvider)
         {
-            if($providerType != $analyticsProvider->ProviderType())
+            if($providerType != $analyticsProvider->ProviderType()) {
+                $logger->log("Core::Analytics::AnalyticsEngine::__construct [Analytics provider did not match provider type]", \PEAR_LOG_INFO);
+
                 continue;
+            }
 
             try
             {

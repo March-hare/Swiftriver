@@ -934,4 +934,7 @@ class Mongo_db
 	  }
 	}
 
+    public function mongo_db() {
+        return $this->db;
+    }
 }

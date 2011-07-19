@@ -32,6 +32,22 @@ class AccumulatedContentOverTimeAnalyticsProvider
 
         $logger->log("Swiftriver::AnalyticsProviders::AccumulatedContentOverTimeAnalyticsProvider::ProvideAnalytics [Method Invoked]", \PEAR_LOG_DEBUG);
 
+        switch ($request->DataContextType)
+        {
+            case "\Swiftriver\Core\Modules\DataContext\MySql_V2\DataContext":
+                return $this->mysql_analytics($request);
+            break;
+            case "\Swiftriver\Core\Modules\DataContext\Mongo_V1\DataContext":
+                return $this->mongo_analytics($request);
+            break;
+            default :
+                return null;
+        }
+    }
+
+    private function mysql_analytics($request) {
+        $logger = \Swiftriver\Core\Setup::GetLogger();
+
         $sql =
             "SELECT
                 c.date as date,
@@ -73,7 +89,7 @@ class AccumulatedContentOverTimeAnalyticsProvider
             foreach($statement->fetchAll() as $row)
             {
                 $date = date("d-m-Y", $row['date']);
-                
+
                 if($lastdate != null)
                 {
                     while($date != date("d-m-Y", \strtotime("$lastdate +1 day")) && $lastdate < date("d-m-Y"))
@@ -101,8 +117,8 @@ class AccumulatedContentOverTimeAnalyticsProvider
                 $request->Result[] = $entry;
 
                 $lastdate = $date;
-                
-                
+
+
             }
         }
         catch(\PDOException $e)
@@ -113,6 +129,61 @@ class AccumulatedContentOverTimeAnalyticsProvider
         }
 
         $logger->log("Swiftriver::AnalyticsProviders::AccumulatedContentOverTimeAnalyticsProvider::ProvideAnalytics [Method finished]", \PEAR_LOG_DEBUG);
+
+        return $request;
+    }
+
+    private function mongo_analytics($request) {
+        $logger = \Swiftriver\Core\Setup::GetLogger();
+        
+        try {
+            $db = parent::PDOConnection($request);
+            $content = $db->get("content");
+
+            $content_date = null;
+
+            $content_statistics = array();
+
+            $array_index = -1;
+            $accumulated_total = 0;
+            $date = null;
+
+            foreach($content as $content_item) {
+                $timestamp = $content_item[$content_item["date"]];
+                
+                $content_item_day_of_year = \date('z', $timestamp);
+
+                if($content_date != $content_item_day_of_year) {
+                    $content_date = $content_item_day_of_year;
+
+                    if($array_index > -1) {
+                        // Add statistics
+                        $content_statistics[]  = array
+                        (
+                            "date" => $date,
+                            "accumulatedtotal" => $accumulated_total,
+                        );
+                    }
+
+                    $accumulated_total = 0;
+
+                    $array_index ++;
+                }
+                else {
+                    $accumulated_total ++;
+                }
+
+                // Get the date for the new entry
+                $date = \date("d-m-Y", $timestamp);
+            }
+
+            $request->Result[] = $content_statistics;
+        }
+        catch(\MongoException $e) {
+            $logger->log("Swiftriver::AnalyticsProviders::AccumulatedContentOverTimeAnalyticsProvider::ProvideAnalytics [An exception was thrown]", \PEAR_LOG_ERR);
+
+            $logger->log("Swiftriver::AnalyticsProviders::AccumulatedContentOverTimeAnalyticsProvider::ProvideAnalytics [$e]", \PEAR_LOG_ERR);
+        }
 
         return $request;
     }
