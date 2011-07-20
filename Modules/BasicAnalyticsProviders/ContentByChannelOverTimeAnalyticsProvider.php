@@ -165,6 +165,10 @@ class ContentByChannelOverTimeAnalyticsProvider
             $currentDay = $currentDay - 1;
         }
 
+        $channel_array = array();
+
+        $request->Result = array();
+
         try
         {
             $db_content = parent::PDOConnection($request);
@@ -172,7 +176,7 @@ class ContentByChannelOverTimeAnalyticsProvider
             $db_channels = parent::PDOConnection($request);
 
             $db_content->where_in("date_day_of_year", $days);
-            $content_items = $db_content-get("content");
+            $content_items = $db_content->get("content");
 
             $channel_array = array();
 
@@ -193,17 +197,17 @@ class ContentByChannelOverTimeAnalyticsProvider
                             $channel_array[$channel_id][$content_item->date_day_of_year] = array();
                         }
                         
-                        $channel_array[$channel_id][$content_item->date_day_of_year]["channelId"] = $channel_id;
-                        $channel_array[$channel_id][$content_item->date_day_of_year]["channelName"] = $channel->name;
+                        $channel_array[$channel_id][$content_item["date_day_of_year"]]["channelId"] = $channel_id;
+                        $channel_array[$channel_id][$content_item["date_day_of_year"]]["channelName"] = $channel["name"];
 
-                        if(!\in_array($channel_id, $channel_array[$channel_id][$content_item->day_of_year]["numberOfContentItems"])) {
-                            $channel_array[$channel_id][$content_item->date_day_of_year]["numberOfContentItems"] = 1;
+                        if(!\in_array($channel_id, $channel_array[$channel_id][$content_item["date_day_of_year"]]["numberOfContentItems"])) {
+                            $channel_array[$channel_id][$content_item["date_day_of_year"]]["numberOfContentItems"] = 1;
                         }
                         else {
-                            $channel_array[$channel_id][$content_item->date_day_of_year]["numberOfContentItems"] += 1;
+                            $channel_array[$channel_id][$content_item["date_day_of_year"]]["numberOfContentItems"] += 1;
                         }
 
-                        $channel_array[$channel_id][$content_item->date_day_of_year]["dayOfTheYear"] = $content_item->date_day_of_year;
+                        $channel_array[$channel_id][$content_item["date_day_of_year"]]["dayOfTheYear"] = $content_item["date_day_of_year"];
                     }
                 }
             }

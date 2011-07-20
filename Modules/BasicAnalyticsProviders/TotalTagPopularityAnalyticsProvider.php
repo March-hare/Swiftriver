@@ -30,7 +30,7 @@ class TotalTagPopularityAnalyticsProvider
     {
         $logger = \Swiftriver\Core\Setup::GetLogger();
 
-        $logger->log("Swiftriver::AnalyticsProviders::AccumulatedContentOverTimeAnalyticsProvider::ProvideAnalytics [Method Invoked]", \PEAR_LOG_DEBUG);
+        $logger->log("Swiftriver::AnalyticsProviders::TotalTagPopularityAnalyticsProvider::ProvideAnalytics [Method Invoked]", \PEAR_LOG_DEBUG);
 
         switch ($request->DataContextType)
         {
@@ -47,8 +47,6 @@ class TotalTagPopularityAnalyticsProvider
 
     function mysql_analytics($request) {
         $logger = \Swiftriver\Core\Setup::GetLogger();
-
-        $logger->log("Swiftriver::AnalyticsProviders::TotalTagPopularityAnalyticsProvider::ProvideAnalytics [Method Invoked]", \PEAR_LOG_DEBUG);
 
         $parameters = $request->Parameters;
 
@@ -119,7 +117,38 @@ class TotalTagPopularityAnalyticsProvider
     }
 
     function mongo_analytics($request) {
-        $request->Result = null;
+        $logger = \Swiftriver\Core\Setup::GetLogger();
+        
+        $request->Result = array();
+        $tag_array = array();
+
+        try
+        {
+            $db = parent::PDOConnection($request);
+            $content_tags = $db->get("content_tags");
+
+            foreach($content_tags as $content_tag) {
+                $tags = $db->get_where('tags', array('id' => $content_tag["tagId"]));
+                foreach($tags as $tag) {
+                    if(!\in_array($tag["text"], $tag_array)) {
+                        $tag_array[$tag["text"]] = array("tag" => $tag["text"], "count" => 1);
+                    }
+                    else {
+                        $tag_array[$tag["text"]]["count"] += 1;
+                    }
+                }
+            }
+        }
+        catch(\MongoException $e) {
+            $logger->log("Swiftriver::AnalyticsProviders::TotalTagPopularityAnalyticsProvider::ProvideAnalytics [An exception was thrown]", \PEAR_LOG_ERR);
+
+            $logger->log("Swiftriver::AnalyticsProviders::TotalTagPopularityAnalyticsProvider::ProvideAnalytics [$e]", \PEAR_LOG_ERR);
+        }
+
+        foreach($tag_array as $tag_item) {
+            $request->Result[] = $tag_item;
+        }
+
         return $request;
     }
 

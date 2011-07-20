@@ -174,6 +174,8 @@ class SourcesByChannelOverTimeAnalyticsProvider
 
         $source_array = array();
 
+        $request->Result = array();
+
         try
         {
             $db_sources = parent::PDOConnection($request);
@@ -191,21 +193,21 @@ class SourcesByChannelOverTimeAnalyticsProvider
                 $channels = $db_channels->get_where("channels", array("id" => $channel_id));
 
                 foreach($channels as $channel) {
-                    if(!\in_array($source_item->date_day_of_year, $source_array[$channel_id])) {
-                        $source_array[$channel_id][$source_item->date_day_of_year] = array();
+                    if(!\in_array($source_item["date_day_of_year"], $source_array[$channel_id])) {
+                        $source_array[$channel_id][$source_item["date_day_of_year"]] = array();
                     }
 
-                    $source_array[$channel_id][$source_item->date_day_of_year]["channelId"] = $channel_id;
-                    $source_array[$channel_id][$source_item->date_day_of_year]["channelName"] = $channel->name;
+                    $source_array[$channel_id][$source_item["date_day_of_year"]]["channelId"] = $channel_id;
+                    $source_array[$channel_id][$source_item["date_day_of_year"]]["channelName"] = $channel["name"];
 
-                    if(!\in_array($channel_id, $source_array[$channel_id][$source_item->day_of_year]["numberOfContentItems"])) {
-                        $source_array[$channel_id][$source_item->date_day_of_year]["numberOfContentItems"] = 1;
+                    if(!\in_array($channel_id, $source_array[$channel_id][$source_item["date_day_of_year"]]["numberOfContentItems"])) {
+                        $source_array[$channel_id][$source_item["date_day_of_year"]]["numberOfContentItems"] = 1;
                     }
                     else {
-                        $source_array[$channel_id][$source_item->date_day_of_year]["numberOfContentItems"] += 1;
+                        $source_array[$channel_id][$source_item["date_day_of_year"]]["numberOfContentItems"] += 1;
                     }
 
-                    $source_array[$channel_id][$source_item->date_day_of_year]["dayOfTheYear"] = $source_item->date_day_of_year;
+                    $source_array[$channel_id][$source_item["date_day_of_year"]]["dayOfTheYear"] = $source_item["date_day_of_year"];
                 }
             }
         }

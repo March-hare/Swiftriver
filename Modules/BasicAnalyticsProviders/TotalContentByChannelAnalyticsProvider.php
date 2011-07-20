@@ -122,7 +122,7 @@ class TotalContentByChannelAnalyticsProvider
     }
 
     function mongo_analytics($request) {
-        $request->Result = null;
+        $request->Result = array();
         return $request;
     }
 
