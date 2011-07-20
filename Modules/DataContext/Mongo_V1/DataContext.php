@@ -372,8 +372,14 @@ class DataContext implements
                 $source = $item->source;
 
                 $sourceParams = (array)$source;
+                $sourceParams["date_utc"] = \date("Y-m-d h:i:s", $sourceParams["date"]);
+                $sourceParams["date_day"] = \date("d", $sourceParams["date"]);
+                $sourceParams["date_month"] = \date("m", $sourceParams["date"]);
+                $sourceParams["date_year"] = \date("Y", $sourceParams["date"]);
+                $sourceParams["date_day_of_year"] = \date("z", $sourceParams["date"]);
 
                 $sourceParams["channelId"] = $source->parent;
+
 
                 $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SaveContent [START: Saving content source]", \PEAR_LOG_DEBUG);
 
@@ -403,6 +409,11 @@ class DataContext implements
                 $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::SaveContent [END: Saving content source]", \PEAR_LOG_DEBUG);
 
                 $contentParams = (array)$item;
+                $contentParams["date_utc"] = \date("Y-m-d h:i:s", $contentParams["date"]);
+                $contentParams["date_day"] = \date("d", $contentParams["date"]);
+                $contentParams["date_month"] = \date("m", $contentParams["date"]);
+                $contentParams["date_year"] = \date("Y", $contentParams["date"]);
+                $contentParams["date_day_of_year"] = \date("z", $contentParams["date"]);
 
                 $contentParams["sourceId"] = $source->id;
 

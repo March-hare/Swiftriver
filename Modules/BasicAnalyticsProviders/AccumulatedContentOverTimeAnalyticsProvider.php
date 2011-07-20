@@ -149,7 +149,7 @@ class AccumulatedContentOverTimeAnalyticsProvider
             $date = null;
 
             foreach($content as $content_item) {
-                $timestamp = $content_item[$content_item["date"]];
+                $timestamp = $content_item["date"];
                 
                 $content_item_day_of_year = \date('z', $timestamp);
 

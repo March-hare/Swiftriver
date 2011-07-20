@@ -30,6 +30,24 @@ class TotalTagPopularityAnalyticsProvider
     {
         $logger = \Swiftriver\Core\Setup::GetLogger();
 
+        $logger->log("Swiftriver::AnalyticsProviders::AccumulatedContentOverTimeAnalyticsProvider::ProvideAnalytics [Method Invoked]", \PEAR_LOG_DEBUG);
+
+        switch ($request->DataContextType)
+        {
+            case "\Swiftriver\Core\Modules\DataContext\MySql_V2\DataContext":
+                return $this->mysql_analytics($request);
+            break;
+            case "\Swiftriver\Core\Modules\DataContext\Mongo_V1\DataContext":
+                return $this->mongo_analytics($request);
+            break;
+            default :
+                return null;
+        }
+    }
+
+    function mysql_analytics($request) {
+        $logger = \Swiftriver\Core\Setup::GetLogger();
+
         $logger->log("Swiftriver::AnalyticsProviders::TotalTagPopularityAnalyticsProvider::ProvideAnalytics [Method Invoked]", \PEAR_LOG_DEBUG);
 
         $parameters = $request->Parameters;
@@ -41,7 +59,7 @@ class TotalTagPopularityAnalyticsProvider
                 $limit = (int) $parameters["Limit"];
 
 
-        $sql = 
+        $sql =
             "select
                 t.text as 'tag',
                 count(*) as 'popularity'
@@ -52,7 +70,7 @@ class TotalTagPopularityAnalyticsProvider
             order by
                 count(*) DESC
             limit $limit";
-        
+
         try
         {
             $db = parent::PDOConnection($request);
@@ -76,7 +94,7 @@ class TotalTagPopularityAnalyticsProvider
             }
 
             $request->Result = array();
-            
+
             foreach($statement->fetchAll() as $row)
             {
                 $entry = array
@@ -97,6 +115,11 @@ class TotalTagPopularityAnalyticsProvider
 
         $logger->log("Swiftriver::AnalyticsProviders::TotalTagPopularityAnalyticsProvider::ProvideAnalytics [Method finished]", \PEAR_LOG_DEBUG);
 
+        return $request;
+    }
+
+    function mongo_analytics($request) {
+        $request->Result = null;
         return $request;
     }
 

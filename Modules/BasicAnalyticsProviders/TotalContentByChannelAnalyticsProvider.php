@@ -30,7 +30,23 @@ class TotalContentByChannelAnalyticsProvider
     {
         $logger = \Swiftriver\Core\Setup::GetLogger();
 
-        $logger->log("Swiftriver::AnalyticsProviders::TotalContentByChannelAnalyticsProvider::ProvideAnalytics [Method Invoked]", \PEAR_LOG_DEBUG);
+        $logger->log("Swiftriver::AnalyticsProviders::AccumulatedContentOverTimeAnalyticsProvider::ProvideAnalytics [Method Invoked]", \PEAR_LOG_DEBUG);
+
+        switch ($request->DataContextType)
+        {
+            case "\Swiftriver\Core\Modules\DataContext\MySql_V2\DataContext":
+                return $this->mysql_analytics($request);
+            break;
+            case "\Swiftriver\Core\Modules\DataContext\Mongo_V1\DataContext":
+                return $this->mongo_analytics($request);
+            break;
+            default :
+                return null;
+        }
+    }
+
+    function mysql_analytics($request) {
+        $logger = \Swiftriver\Core\Setup::GetLogger();
 
         $parameters = $request->Parameters;
 
@@ -102,6 +118,11 @@ class TotalContentByChannelAnalyticsProvider
 
         $logger->log("Swiftriver::AnalyticsProviders::TotalContentByChannelAnalyticsProvider::ProvideAnalytics [Method finished]", \PEAR_LOG_DEBUG);
 
+        return $request;
+    }
+
+    function mongo_analytics($request) {
+        $request->Result = null;
         return $request;
     }
 
