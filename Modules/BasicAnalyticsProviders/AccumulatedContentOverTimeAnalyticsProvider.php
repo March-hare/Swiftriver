@@ -135,6 +135,8 @@ class AccumulatedContentOverTimeAnalyticsProvider
 
     private function mongo_analytics($request) {
         $logger = \Swiftriver\Core\Setup::GetLogger();
+
+        $request->Result = null;
         
         try {
             $db = parent::PDOConnection($request);
@@ -175,6 +177,10 @@ class AccumulatedContentOverTimeAnalyticsProvider
 
                 // Get the date for the new entry
                 $date = \date("d-m-Y", $timestamp);
+            }
+
+            if($request->Result == null) {
+                $request->Result = array();
             }
 
             $request->Result[] = $content_statistics;

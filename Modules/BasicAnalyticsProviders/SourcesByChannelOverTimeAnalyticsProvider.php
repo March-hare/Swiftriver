@@ -174,7 +174,7 @@ class SourcesByChannelOverTimeAnalyticsProvider
 
         $source_array = array();
 
-        $request->Result = array();
+        $request->Result = null;
 
         try
         {
@@ -219,6 +219,10 @@ class SourcesByChannelOverTimeAnalyticsProvider
 
         foreach($source_array as $source_array_item) {
             foreach($source_array_item as $source_array_item_day) {
+                if($request->Result == null) {
+                    $request->Result = array();
+                }
+
                 $request->Result[] = $source_array_item_day;
             }
         }

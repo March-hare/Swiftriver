@@ -167,7 +167,7 @@ class ContentByChannelOverTimeAnalyticsProvider
 
         $channel_array = array();
 
-        $request->Result = array();
+        $request->Result = null;
 
         try
         {
@@ -220,6 +220,10 @@ class ContentByChannelOverTimeAnalyticsProvider
 
         foreach($channel_array as $channel_array_item) {
             foreach($channel_array_item as $channel_array_item_day) {
+                if($request->Result == null) {
+                    $request->Result = array();
+                }
+                
                 $request->Result[] = $channel_array_item_day;
             }
         }

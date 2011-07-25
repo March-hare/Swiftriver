@@ -119,7 +119,7 @@ class TotalTagPopularityAnalyticsProvider
     function mongo_analytics($request) {
         $logger = \Swiftriver\Core\Setup::GetLogger();
         
-        $request->Result = array();
+        $request->Result = null;
         $tag_array = array();
 
         try
@@ -146,6 +146,10 @@ class TotalTagPopularityAnalyticsProvider
         }
 
         foreach($tag_array as $tag_item) {
+            if($request->Result == null) {
+                $request->Result = array();
+            }
+            
             $request->Result[] = $tag_item;
         }
 
