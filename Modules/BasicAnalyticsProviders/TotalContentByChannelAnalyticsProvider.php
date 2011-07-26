@@ -134,18 +134,7 @@ class TotalContentByChannelAnalyticsProvider
             if(\key_exists("TimeLimit", $parameters))
                 $timeLimit = (int) $parameters["TimeLimit"];
 
-        $currentDay = $yearDay;
-
-        $days = array();
-
-        $days[] = $currentDay + 1;
-
-        while (($currentDay > 0) && (($yearDay - $currentDay) < $timeLimit))
-        {
-            $days[] = $currentDay;
-
-            $currentDay = $currentDay - 1;
-        }
+        $date = \strtotime("-$timeLimit days");
 
         $channel_array = array();
 
@@ -157,7 +146,7 @@ class TotalContentByChannelAnalyticsProvider
             $db_sources = parent::PDOConnection($request);
             $db_channels = parent::PDOConnection($request);
 
-            $db_content->where_in("date_day_of_year", $days);
+            $db_content->where(array("date" => array('$gte' => $date)));
             $content_items = $db_content->get("content");
 
             $channel_array = array();
@@ -175,21 +164,18 @@ class TotalContentByChannelAnalyticsProvider
                     $channels = $db_channels->get_where("channels", array("id" => $channel_id));
 
                     foreach($channels as $channel) {
-                        if(!\in_array($content_item->date_day_of_year, $channel_array[$channel_id])) {
-                            $channel_array[$channel_id][$content_item->date_day_of_year] = array();
-                        }
+                        $channel_array[$channel_id]["channelId"] = $channel_id;
+                        $channel_array[$channel_id]["channelName"] = $channel["name"];
 
-                        $channel_array[$channel_id][$content_item["date_day_of_year"]]["channelId"] = $channel_id;
-                        $channel_array[$channel_id][$content_item["date_day_of_year"]]["channelName"] = $channel["name"];
-
-                        if(!\in_array($channel_id, $channel_array[$channel_id][$content_item["date_day_of_year"]]["numberOfContentItems"])) {
-                            $channel_array[$channel_id][$content_item["date_day_of_year"]]["numberOfContentItems"] = 1;
+                        if(!\in_array($channel_id, $channel_array[$channel_id]["numberOfContentItems"])) {
+                            $channel_array[$channel_id]["numberOfContentItems"] = 1;
                         }
                         else {
-                            $channel_array[$channel_id][$content_item["date_day_of_year"]]["numberOfContentItems"] += 1;
+                            $channel_array[$channel_id]["numberOfContentItems"] += 1;
                         }
 
-                        $channel_array[$channel_id][$content_item["date_day_of_year"]]["dayOfTheYear"] = $content_item["date_day_of_year"];
+                        $channel_array[$channel_id]["channelType"] = $content_item["source"]["type"];
+                        $channel_array[$channel_id]["channelSubType"] = $content_item["source"]["subType"];
                     }
                 }
             }
@@ -201,13 +187,11 @@ class TotalContentByChannelAnalyticsProvider
         }
 
         foreach($channel_array as $channel_array_item) {
-            foreach($channel_array_item as $channel_array_item_day) {
-                if($request->Result == null) {
-                    $request->Result = array();
-                }
-
-                $request->Result[] = $channel_array_item_day;
+            if($request->Result == null) {
+                $request->Result = array();
             }
+
+            $request->Result[] = $channel_array_item;
         }
 
         return $request;
