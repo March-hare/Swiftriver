@@ -149,11 +149,17 @@ class TotalContentByChannelAnalyticsProvider
             $db_content->where(array("date" => array('$gte' => $date)));
             $content_items = $db_content->get("content");
 
+            $logger->log("Swiftriver::AnalyticsProviders::TotalContentByChannelAnalyticsProvider::ProvideAnalytics [Selected date: $date]", \PEAR_LOG_INFO);
+
+            $logger->log("Swiftriver::AnalyticsProviders::TotalContentByChannelAnalyticsProvider::ProvideAnalytics [".\count($content_items)." number of content items retrieved]", \PEAR_LOG_INFO);
+
             $channel_array = array();
 
             foreach($content_items as $content_item) {
                 $source_id = $content_item["source"]["id"];
                 $source_items = $db_sources->get_where("sources", array("id" => $source_id));
+
+                $logger->log("Swiftriver::AnalyticsProviders::TotalContentByChannelAnalyticsProvider::ProvideAnalytics [".\count($source_items)." number of source items retrieved]", \PEAR_LOG_INFO);
 
                 foreach($source_items as $source_item) {
                     $channel_id = $source_item["channelId"];
@@ -162,6 +168,8 @@ class TotalContentByChannelAnalyticsProvider
                     }
 
                     $channels = $db_channels->get_where("channels", array("id" => $channel_id));
+
+                    $logger->log("Swiftriver::AnalyticsProviders::TotalContentByChannelAnalyticsProvider::ProvideAnalytics [".\count($channels)." number of channels retrieved]", \PEAR_LOG_INFO);
 
                     foreach($channels as $channel) {
                         $channel_array[$channel_id]["channelId"] = $channel_id;

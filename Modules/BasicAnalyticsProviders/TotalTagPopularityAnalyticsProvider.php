@@ -116,11 +116,35 @@ class TotalTagPopularityAnalyticsProvider
         return $request;
     }
 
+    function mongo_array_sort($a, $subkey) {
+        foreach($a as $k=>$v) {
+            $b[$k] = strtolower($v[$subkey]);
+        }
+
+        asort($b);
+
+        foreach($b as $key=>$val) {
+            $c[] = $a[$key];
+        }
+            
+        return $c;
+    }
+
     function mongo_analytics($request) {
         $logger = \Swiftriver\Core\Setup::GetLogger();
         
         $request->Result = null;
         $tag_array = array();
+
+        $limit = 20;
+
+        $parameters = $request->Parameters;
+
+        if(\is_array($parameters))
+            if(\key_exists("Limit", $parameters))
+                $limit = (int) $parameters["Limit"];
+
+        $logger->log("Swiftriver::AnalyticsProviders::TotalTagPopularityAnalyticsProvider::ProvideAnalytics [Set limit $limit]", \PEAR_LOG_INFO);
 
         try
         {
@@ -145,12 +169,21 @@ class TotalTagPopularityAnalyticsProvider
             $logger->log("Swiftriver::AnalyticsProviders::TotalTagPopularityAnalyticsProvider::ProvideAnalytics [$e]", \PEAR_LOG_ERR);
         }
 
-        foreach($tag_array as $tag_item) {
+        $sorted_tag_array = $this->mongo_array_sort($tag_array, "count");
+
+        $num_items = 1;
+
+        foreach($sorted_tag_array as $tag_item) {
+            if($num_items > $limit)
+                continue;
+            
             if($request->Result == null) {
                 $request->Result = array();
             }
             
             $request->Result[] = $tag_item;
+
+            $num_items ++;
         }
 
         return $request;
