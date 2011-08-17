@@ -41,6 +41,13 @@ class Setup
     private static $dynamicModuleConfiguration;
 
     /**
+     * Static variable for the Authentication system Config handler
+     *
+     * @var Configuration\ConfigurationHandlers\AuthenticationConfigurationHandler
+     */
+    private static $authenticationConfiguration;
+
+    /**
      * Get the shared instance for the logger
      * @return \Log
      */
@@ -133,6 +140,21 @@ class Setup
 
         return self::$dynamicModuleConfiguration;
     }
+
+    /**
+     * Static access to the dynamic module config handler
+     *
+     * @return Configuration\ConfigurationHandlers\DynamicModuleConfigurationHandler
+     */
+    public static function AuthenticationConfiguration()
+    {
+        if(isset(self::$authenticationConfiguration))
+            return self::$authenticationConfiguration;
+
+        self::$authenticationConfiguration = new Configuration\ConfigurationHandlers\AuthenticationConfigurationHandler(dirname(__FILE__)."/Configuration/ConfigurationFiles/AuthenticationConfiguration.xml");
+
+        return self::$authenticationConfiguration;
+    }
 }
 
 //include the Loging Framework
@@ -171,6 +193,7 @@ $directories = array(
     dirname(__FILE__)."/DAL/",
     dirname(__FILE__)."/StateTransition/",
     dirname(__FILE__)."/PreProcessing/",
+    dirname(__FILE__)."/Authentication/",
     dirname(__FILE__)."/Workflows/",
     dirname(__FILE__)."/EventDistribution/",
     Setup::Configuration()->ModulesDirectory."/SiSW/",

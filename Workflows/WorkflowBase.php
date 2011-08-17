@@ -39,7 +39,20 @@ class WorkflowBase
     public function CheckKey($key) 
     {
         //BETA - accept all dev calls
-        return $key == "swiftriver_dev";
+        $authentication_service = \Swiftriver\Core\Setup::AuthenticationConfiguration()->HandlerName;
+
+        if($authentication_service == "RiverID") {
+            $authentication_service = new \Swiftriver\Core\Authentication\RiverIDAuthenticationServices();
+        }
+
+        $authentication = $authentication_service->AuthenticateAPIKey($key, "object");
+
+        if($authentication->success == "success") {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 }
 ?>

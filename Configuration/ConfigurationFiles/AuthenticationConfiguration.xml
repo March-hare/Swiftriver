@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<configuration>
+    <modules>
+        <module name="RiverID">
+            <properties>
+                <property name="HandlerName" type="string" description="The name of the Authentication Service handler" value="RiverID"/>
+                <property name="HandlerAddress" type="string" description="The IP Address for the server" value="http://173.203.86.153/"/>
+            </properties>
+        </module>
+    </modules>
+</configuration>
