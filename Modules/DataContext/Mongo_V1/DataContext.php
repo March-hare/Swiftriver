@@ -41,7 +41,44 @@ class DataContext implements
      */
     public static function IsRegisterdCoreAPIKey($key)
     {
+        $logger = \Swiftriver\Core\Setup::GetLogger();
+        $db = self::MongoDatabase();
 
+        $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::IsRegisteredCoreAPIKey [Method started]", \PEAR_LOG_DEBUG);
+
+        $status = $db->get_where('users', array('apiKey' => $key));
+
+        $authentication = new \Swiftriver\Core\ObjectModel\Authentication();
+
+        try {
+            if(count($status) > 0) {
+                // Authentication successful
+
+                $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::IsRegisteredCoreAPIKey [API Key $key exists]", \PEAR_LOG_INFO);
+
+                $authentication_record = $status[0];
+
+                $authentication->status = "success";
+                $authentication->account = $authentication_record["account"];
+                $authentication->api_key = $authentication_record["apiKey"];
+            }
+            else {
+                // Authentication failure
+
+                $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::IsRegisteredCoreAPIKey [API Key $key does not exist]", \PEAR_LOG_INFO);
+
+                $authentication->status = "error";
+            }
+        }
+        catch(\MongoException $e)
+        {
+            $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::IsRegisteredCoreAPIKey [An exception was thrown]", \PEAR_LOG_ERR);
+            $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::IsRegisteredCoreAPIKey [$e]", \PEAR_LOG_ERR);
+        }
+
+        $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::IsRegisteredCoreAPIKey [Method finished]", \PEAR_LOG_DEBUG);
+
+        return $authentication;
     }
 
     /**
@@ -52,9 +89,23 @@ class DataContext implements
      * @param string $key
      * @return bool
      */
-    public static function AddRegisteredCoreAPIKey($key)
+    public static function AddRegisteredCoreAPIKey($account, $key)
     {
+        $logger = \Swiftriver\Core\Setup::GetLogger();
+        $db = self::MongoDatabase();
 
+        $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::AddRegisteredCoreAPIKey [Method started]", \PEAR_LOG_DEBUG);
+
+        try {
+            $db->insert('users', array('account' => $account, 'apiKey' => $key));
+        }
+        catch(\MongoException $e)
+        {
+            $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::AddRegisteredCoreAPIKey [An exception was thrown]", \PEAR_LOG_ERR);
+            $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::AddRegisteredCoreAPIKey [$e]", \PEAR_LOG_ERR);
+        }
+
+        $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::AddRegisteredCoreAPIKey [Method finished]", \PEAR_LOG_DEBUG);
     }
 
     /**
@@ -67,7 +118,21 @@ class DataContext implements
      */
     public static function RemoveRegisteredCoreAPIKey($key)
     {
+        $logger = \Swiftriver\Core\Setup::GetLogger();
+        $db = self::MongoDatabase();
 
+        $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::RemoveRegisteredCoreAPIKey [Method started]", \PEAR_LOG_DEBUG);
+
+        try {
+            $db->delete('users', array('apiKey' => $key));
+        }
+        catch(\MongoException $e)
+        {
+            $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::RemoveRegisteredCoreAPIKey [An exception was thrown]", \PEAR_LOG_ERR);
+            $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::RemoveRegisteredCoreAPIKey [$e]", \PEAR_LOG_ERR);
+        }
+
+        $logger->log("Core::Modules::DataContext::Mongo_V1::DataContext::RemoveRegisteredCoreAPIKey [Method finished]", \PEAR_LOG_DEBUG);
     }
 
     /**

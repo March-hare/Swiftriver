@@ -84,7 +84,7 @@ class RiverIDAuthenticationServices extends AuthenticationServicesBase {
         }
     }
 
-    public function RemoveAPIKey($api_key, $format) {
+    public function RemoveAPIKey($api_key) {
         $logger = \Swiftriver\Core\Setup::GetLogger();
         $logger->log("Core::Authentication::AuthenticationServicesBase::RemoveAPIKey [Method invoked]", \PEAR_LOG_INFO);
 

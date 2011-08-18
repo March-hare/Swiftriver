@@ -59,6 +59,20 @@ CREATE TABLE IF NOT EXISTS SC_Content_Tags (
     PRIMARY KEY ( contentId, tagId )
 ) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
+-- Create the Cotent_Tags
+CREATE TABLE IF NOT EXISTS SC_Content_Tags (
+    contentId VARCHAR (48) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ,
+    tagId VARCHAR (48) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ,
+    PRIMARY KEY ( contentId, tagId )
+) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+
+-- Create the Users
+CREATE TABLE IF NOT EXISTS SC_Users (
+    account VARCHAR (100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ,
+    apiKey VARCHAR (100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ,
+    PRIMARY KEY ( account )
+) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+
 
 -- *****************************************************************************
 -- Channel Related Stored Procedures
@@ -328,4 +342,40 @@ CREATE PROCEDURE SC_SelectAllSources ()
             json
         FROM
             SC_Sources;
+    END;
+
+-- Create the Get API Key stored procedure
+DROP PROCEDURE IF EXISTS SC_GetAPIKey;
+CREATE PROCEDURE SC_GetAPIKey ( IN apiKeyVar VARCHAR ( 100 ) )
+    BEGIN
+        SELECT
+            account, apiKey
+        FROM
+            SC_Users
+        WHERE
+            apiKey = apiKeyVar;
+    END;
+
+-- Create the Create API Key stored procedure
+DROP PROCEDURE IF EXISTS SC_CreateAPIKey;
+CREATE PROCEDURE SC_CreateAPIKey (
+        IN accountVar VARCHAR( 100 ),
+        IN apiKeyVar VARCHAR( 100 ))
+    BEGIN
+        INSERT
+            INTO SC_Users
+        VALUES (
+            accountVar,
+            apiKeyVar);
+    END;
+
+-- Create the Delete API Key stored procedure
+DROP PROCEDURE IF EXISTS SC_DeleteAPIKey;
+CREATE PROCEDURE SC_DeleteAPIKey (
+        IN apiKeyVar VARCHAR( 100 ))
+    BEGIN
+        DELETE
+            FROM SC_Users
+        WHERE
+            apiKey = apiKeyVar;
     END;

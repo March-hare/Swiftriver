@@ -41,7 +41,75 @@ class DataContext implements
      */
     public static function IsRegisterdCoreAPIKey($key)
     {
+        $logger = \Swiftriver\Core\Setup::GetLogger();
 
+        $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::IsRegisterdCoreAPIKey [Method Invoked]", \PEAR_LOG_DEBUG);
+
+        $sql = "CALL SC_GetAPIKey ( :key )";
+
+        $authentication = new \Swiftriver\Core\ObjectModel\Authentication();
+        $authentication->status = "error";
+
+        try
+        {
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::IsRegisterdCoreAPIKey [START: Connecting to db via PDO]", \PEAR_LOG_DEBUG);
+
+            $db = self::PDOConnection();
+
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::IsRegisterdCoreAPIKey [END: Connecting to db via PDO]", \PEAR_LOG_DEBUG);
+
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::IsRegisterdCoreAPIKey [START: Preparing PDO statment]", \PEAR_LOG_DEBUG);
+
+            $statement = $db->prepare($sql);
+
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::IsRegisterdCoreAPIKey [END: Preparing PDO statment]", \PEAR_LOG_DEBUG);
+
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::IsRegisterdCoreAPIKey [START: Looping through result set]", \PEAR_LOG_DEBUG);
+
+            $parameters = array ("key" => $key);
+
+            $result = $statement->execute($parameters);
+
+            if($result === false)
+            {
+                $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::IsRegisterdCoreAPIKey [An Exception was thrown by the PDO framwork]", \PEAR_LOG_ERR);
+
+                $errorInfo = $statement->errorInfo();
+
+                $errorMessage = $errorInfo[2];
+
+                $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::IsRegisterdCoreAPIKey [$errorMessage]", \PEAR_LOG_ERR);
+            }
+
+            $db = null;
+
+            if(isset($result) && $result != null && $result !== 0)
+            {
+                $rows = $statement->fetchAll();
+
+                if(count($rows) > 0) {
+                    $authentication->status = "success";
+
+                    foreach($rows as $row)
+                    {
+                        $authentication->api_key = $row->apiKey;
+                        $authentication->account = $row->account;
+                    }
+                }
+            }
+
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::IsRegisterdCoreAPIKey [END: Looping through result set]", \PEAR_LOG_DEBUG);
+        }
+        catch(\PDOException $e)
+        {
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::IsRegisterdCoreAPIKey [An exception was thrown]", \PEAR_LOG_ERR);
+
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::IsRegisterdCoreAPIKey [$e]", \PEAR_LOG_ERR);
+        }
+
+        $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::IsRegisterdCoreAPIKey [Method Finished]", \PEAR_LOG_DEBUG);
+
+        return $authentication;
     }
 
     /**
@@ -52,9 +120,58 @@ class DataContext implements
      * @param string $key
      * @return bool
      */
-    public static function AddRegisteredCoreAPIKey($key)
+    public static function AddRegisteredCoreAPIKey($account, $key)
     {
+        $logger = \Swiftriver\Core\Setup::GetLogger();
 
+        $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::AddRegisteredCoreAPIKey [Method Invoked]", \PEAR_LOG_DEBUG);
+
+        $sql = "CALL SC_CreateAPIKey ( :account, :key )";
+
+        try
+        {
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::AddRegisteredCoreAPIKey [START: Connecting to db via PDO]", \PEAR_LOG_DEBUG);
+
+            $db = self::PDOConnection();
+
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::AddRegisteredCoreAPIKey [END: Connecting to db via PDO]", \PEAR_LOG_DEBUG);
+
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::AddRegisteredCoreAPIKey [START: Preparing PDO statment]", \PEAR_LOG_DEBUG);
+
+            $statement = $db->prepare($sql);
+
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::AddRegisteredCoreAPIKey [END: Preparing PDO statment]", \PEAR_LOG_DEBUG);
+
+            $parameters = array ("account" => $account, "key" => $key);
+
+            $result = $statement->execute($parameters);
+
+            if($result === false)
+            {
+                $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::AddRegisteredCoreAPIKey [An Exception was thrown by the PDO framwork]", \PEAR_LOG_ERR);
+
+                $errorInfo = $statement->errorInfo();
+
+                $errorMessage = $errorInfo[2];
+
+                $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::AddRegisteredCoreAPIKey [$errorMessage]", \PEAR_LOG_ERR);
+            }
+
+            $db = null;
+
+            if(isset($result) && $result != null && $result !== 0)
+            {
+                $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::AddRegisteredCoreAPIKey [Execution successful]", \PEAR_LOG_DEBUG);
+            }
+        }
+        catch(\PDOException $e)
+        {
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::AddRegisteredCoreAPIKey [An exception was thrown]", \PEAR_LOG_ERR);
+
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::AddRegisteredCoreAPIKey [$e]", \PEAR_LOG_ERR);
+        }
+
+        $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::AddRegisteredCoreAPIKey [Method Finished]", \PEAR_LOG_DEBUG);
     }
 
     /**
@@ -67,7 +184,56 @@ class DataContext implements
      */
     public static function RemoveRegisteredCoreAPIKey($key)
     {
+        $logger = \Swiftriver\Core\Setup::GetLogger();
 
+        $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::RemoveRegisteredCoreAPIKey [Method Invoked]", \PEAR_LOG_DEBUG);
+
+        $sql = "CALL SC_DeleteAPIKey ( :key )";
+
+        try
+        {
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::RemoveRegisteredCoreAPIKey [START: Connecting to db via PDO]", \PEAR_LOG_DEBUG);
+
+            $db = self::PDOConnection();
+
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::RemoveRegisteredCoreAPIKey [END: Connecting to db via PDO]", \PEAR_LOG_DEBUG);
+
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::RemoveRegisteredCoreAPIKey [START: Preparing PDO statment]", \PEAR_LOG_DEBUG);
+
+            $statement = $db->prepare($sql);
+
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::RemoveRegisteredCoreAPIKey [END: Preparing PDO statment]", \PEAR_LOG_DEBUG);
+
+            $parameters = array ("key" => $key);
+
+            $result = $statement->execute($parameters);
+
+            if($result === false)
+            {
+                $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::RemoveRegisteredCoreAPIKey [An Exception was thrown by the PDO framwork]", \PEAR_LOG_ERR);
+
+                $errorInfo = $statement->errorInfo();
+
+                $errorMessage = $errorInfo[2];
+
+                $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::RemoveRegisteredCoreAPIKey [$errorMessage]", \PEAR_LOG_ERR);
+            }
+
+            $db = null;
+
+            if(isset($result) && $result != null && $result !== 0)
+            {
+                $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::RemoveRegisteredCoreAPIKey [Execution successful]", \PEAR_LOG_DEBUG);
+            }
+        }
+        catch(\PDOException $e)
+        {
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::RemoveRegisteredCoreAPIKey [An exception was thrown]", \PEAR_LOG_ERR);
+
+            $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::RemoveRegisteredCoreAPIKey [$e]", \PEAR_LOG_ERR);
+        }
+
+        $logger->log("Core::Modules::DataContext::MySQL_V2::DataContext::RemoveRegisteredCoreAPIKey [Method Finished]", \PEAR_LOG_DEBUG);
     }
 
     /**

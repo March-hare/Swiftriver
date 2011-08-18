@@ -33,12 +33,12 @@ class DataContext implements
      * @param string $key
      * @return bool
      */
-    public static function AddRegisteredCoreAPIKey($key) {
+    public static function AddRegisteredCoreAPIKey($account, $key) {
         if(!isset($key) || $key == "")
             return false;
         if(self::IsRegisterdCoreAPIKey($key))
             return true;
-        $query = "INSERT INTO coreapikeys VALUES('".$key."');";
+        $query = "INSERT INTO coreapikeys VALUES('".$account."', '".$key."');";
         $result = self::RunQuery($query);
         return $result;
     }
