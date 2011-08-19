@@ -65,11 +65,12 @@ PROJECT CONTRIBUTORS
 
 Staff Developers
 
-	Jon Gosier (Director of Product, SwiftRiver)
-	Matthew Griffiths (Director of Platform, SwiftRiver) 
+	Ahmed Maawy (Lead Developer)
 
 Contributors
 
+	Jon Gosier
+	Matthew Griffiths
 	Soe
 	Nishith Rastogi 
 	Mang-Git Ng 
@@ -87,7 +88,6 @@ Contributors
 	Wolfgang Werner 
 	M. Edward Borasky 
 	Maarten J. van der Veen
-	Ahmed Maawy
 
 Contributing Organizations
 
