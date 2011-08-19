@@ -14,7 +14,7 @@ NOTE: Contact jg [at] swiftly.org with additional questions or feedback.
 SERVER REQUIREMENTS
 -------------------
 
-* Apache 1.3 or greater
+* Apache 2.x or greater
 * PHP 5.3 or higher
 * PHP Pear Extensions
 * MySQL 4.0 or higher
