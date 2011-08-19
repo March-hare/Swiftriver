@@ -174,3 +174,14 @@ RELEASE SCHEDULE
 4.0.0	Zouk
 
 * = current release
+
+SUPPORT
+-------
+
+* [SwiftRiver Mailing List](http://groups.google.com/group/swiftriver)
+* [#ushahidi on Freenode](http://irc.lc/freenode/ushahidi)
+
+SEE ALSO
+--------
+
+* [Ushahidi](http://ushahidi.com/)
