@@ -4,6 +4,32 @@ namespace Swiftriver\Core\Authentication;
 class RiverIDAuthenticationServices extends AuthenticationServicesBase {
     private function ValidateRiverIDLogin($account, $password) {
         // Validate with the RiverID server
+        $handler_address = \Swiftriver\Core\Setup::AuthenticationConfiguration()->HandlerAddress;
+        $handler_address = rtrim($handler_address, "/")."/signin";
+
+        $fields = array('email' => $account, 'password' => $password);
+
+        $fields_string = "";
+
+        foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
+
+        rtrim($fields_string,'&');
+
+        // Open connection to RiverID
+        $ch = curl_init();
+
+        // Set the url, number of POST vars, POST data
+        curl_setopt($ch,CURLOPT_URL, $handler_address);
+        curl_setopt($ch,CURLOPT_POST, count($fields));
+        curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
+
+        // Execute an HTTP POST
+        $result_json = json_decode(curl_exec($ch));
+
+        // Close the connextion
+        curl_close($ch);
+
+        return $result_json->status;
     }
     
     public function AuthenticateAPIKey($api_key, $format = 'json') {
